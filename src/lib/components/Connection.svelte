@@ -7,24 +7,27 @@
 	import { onDestroy } from 'svelte';
 
 	interface Props {
-		parachainSpec: string;
+		parachainSpec?: string;
+		relaychainSpec?: string;
 		chainName?: string;
-		onApiReady?: (client: PolkadotClient) => void;
+		onApiReady?: (parachainClient: PolkadotClient, relaychainClient: PolkadotClient) => void;
 	}
 
-	let { chainSpec, chainName = 'Chain', onApiReady = undefined }: Props = $props();
+	let { parachainSpec = '', relaychainSpec = '', chainName = 'Chain', onApiReady = undefined }: Props = $props();
 
 	type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';
 
 	let connectionState = $state<ConnectionState>('disconnected');
-	let client = $state<PolkadotClient | null>(null);
+	let parachainClient = $state<PolkadotClient | null>(null);
+	let relaychainClient = $state<PolkadotClient | null>(null);
 	let worker = $state<Worker | null>(null);
-	let chain = $state<Chain | null>(null);
+	let relaychainChain = $state<Chain | null>(null);
+	let parachainChain = $state<Chain | null>(null);
 	let smoldot = $state<Client | null>(null);
 	let error = $state<string | null>(null);
 
 	async function connect(): Promise<void> {
-		if (!chainSpec) return;
+		if (!parachainSpec || !relaychainSpec) return;
 
 		try {
 			connectionState = 'connecting';
@@ -36,14 +39,21 @@
 			// Start smoldot from worker
 			smoldot = startFromWorker(new SmWorker());
 
-			// Add chain with the provided chainSpec
-			chain = await smoldot.addChain({ chainSpec });
+			// Add relaychain first
+			relaychainChain = await smoldot.addChain({ chainSpec: relaychainSpec });
 
-			// Create client with smoldot provider
-			client = createClient(getSmProvider(chain));
+			// Add parachain with relaychain as potential relay
+			parachainChain = await smoldot.addChain({ 
+				chainSpec: parachainSpec,
+				potentialRelayChains: [relaychainChain]
+			});
+
+			// Create clients for both chains
+			parachainClient = createClient(getSmProvider(parachainChain));
+			relaychainClient = createClient(getSmProvider(relaychainChain));
 
 			connectionState = 'connected';
-			onApiReady?.(client);
+			onApiReady?.(parachainClient, relaychainClient);
 		} catch (err) {
 			console.error('Connection failed', err);
 			error = err instanceof Error ? err.message : 'Connection failed';
@@ -59,14 +69,17 @@
 
 	function cleanup(): void {
 		try {
-			chain?.remove();
+			parachainChain?.remove();
+			relaychainChain?.remove();
 			smoldot?.terminate();
 			worker?.terminate();
 		} catch (err) {
 			console.error('Cleanup error:', err);
 		} finally {
-			client = null;
-			chain = null;
+			parachainClient = null;
+			relaychainClient = null;
+			parachainChain = null;
+			relaychainChain = null;
 			smoldot = null;
 			worker = null;
 			error = null;
@@ -99,13 +112,24 @@
 		</div>
 	</div>
 
-	<div class="rounded bg-gray-50 p-2 font-mono text-xs break-all text-gray-500">
-		{chainSpec.length > 100 ? `${chainSpec.substring(0, 100)}...` : chainSpec}
+	<div class="space-y-1">
+		{#if relaychainSpec}
+			<div class="text-xs text-gray-600">Relaychain:</div>
+			<div class="rounded bg-gray-50 p-2 font-mono text-xs break-all text-gray-500">
+				{relaychainSpec.length > 50 ? `${relaychainSpec.substring(0, 50)}...` : relaychainSpec}
+			</div>
+		{/if}
+		{#if parachainSpec}
+			<div class="text-xs text-gray-600">Parachain:</div>
+			<div class="rounded bg-gray-50 p-2 font-mono text-xs break-all text-gray-500">
+				{parachainSpec.length > 50 ? `${parachainSpec.substring(0, 50)}...` : parachainSpec}
+			</div>
+		{/if}
 	</div>
 
 	<button
 		onclick={toggle}
-		disabled={connectionState === 'connecting'}
+		disabled={connectionState === 'connecting' || (!parachainSpec || !relaychainSpec)}
 		class="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
 	>
 		{connectionState === 'connected'

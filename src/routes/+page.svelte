@@ -22,18 +22,16 @@
 		relaychainName = name;
 	}
 
-	function onParachainReady(client: PolkadotClient): void {
-		parachainClient = client;
-		console.log('Parachain connected via smoldot');
-		client.finalizedBlock$.subscribe((block) => {
+	function onConnectionReady(paraClient: PolkadotClient, relayClient: PolkadotClient): void {
+		parachainClient = paraClient;
+		relaychainClient = relayClient;
+		console.log('Both chains connected via smoldot');
+		
+		paraClient.finalizedBlock$.subscribe((block) => {
 			console.log('Parachain finalized block:', block.number, block.hash);
 		});
-	}
-
-	function onRelaychainReady(client: PolkadotClient): void {
-		relaychainClient = client;
-		console.log('Relay chain connected via smoldot');
-		client.finalizedBlock$.subscribe((block) => {
+		
+		relayClient.finalizedBlock$.subscribe((block) => {
 			console.log('Relay chain finalized block:', block.number, block.hash);
 		});
 	}
@@ -45,24 +43,19 @@
 	<div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
 		<div>
 			<ChainSpecLoader label="Load Raw Parachain Spec" specLoaded={onParachainSpecLoaded} />
-			{#if parachainChainSpec}
-				<Connection
-					chainSpec={parachainChainSpec}
-					chainName={parachainName}
-					onApiReady={onParachainReady}
-				/>
-			{/if}
 		</div>
 		<div>
 			<ChainSpecLoader label="Load Raw Relay Chain Spec" specLoaded={onRelaychainSpecLoaded} />
-			{#if relaychainChainSpec}
-				<Connection
-					chainSpec={relaychainChainSpec}
-					chainName={relaychainName}
-					onApiReady={onRelaychainReady}
-				/>
-			{/if}
 		</div>
+	</div>
+
+	<div class="mb-8">
+		<Connection
+			parachainSpec={parachainChainSpec}
+			relaychainSpec={relaychainChainSpec}
+			chainName="Chain Connection"
+			onApiReady={onConnectionReady}
+		/>
 	</div>
 
 	{#if parachainClient && relaychainClient}
