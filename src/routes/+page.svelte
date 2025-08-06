@@ -1,32 +1,29 @@
 <script lang="ts">
 	import Connection from '$lib/components/Connection.svelte';
-	import { chainSpec as polkadotChainSpec } from 'polkadot-api/chains/polkadot';
+	import ChainSpecLoader from '$lib/components/ChainSpecLoader.svelte';
 	import type { PolkadotClient } from 'polkadot-api';
 
 	let parachainApi = $state<PolkadotClient | null>(null);
 	let relaychainApi = $state<PolkadotClient | null>(null);
 
-	// You'll need to provide your parachain's chainSpec
-	// This could be loaded from a file or fetched from an endpoint
-	let parachainChainSpec = $state<string>(`{
-    "name": "Your Parachain",
-    "id": "your-parachain",
-    "chainType": "Live",
-    "bootNodes": [],
-    "telemetryEndpoints": null,
-    "protocolId": "your-parachain",
-    "properties": {},
-    "relay_chain": "polkadot",
-    "para_id": 2000,
-    "codeSubstitutes": {},
-    "genesis": {}
-  }`);
+	let parachainChainSpec = $state<string | null>(null);
+	let parachainName = $state<string>('Parachain');
+	let relaychainChainSpec = $state<string | null>(null);
+	let relaychainName = $state<string>('Relay Chain');
+
+	function onParachainSpecLoaded({ spec, name }: { spec: string; name: string }) {
+		parachainChainSpec = spec;
+		parachainName = name;
+	}
+
+	function onRelaychainSpecLoaded({ spec, name }: { spec: string; name: string }) {
+		relaychainChainSpec = spec;
+		relaychainName = name;
+	}
 
 	function onParachainReady(api: PolkadotClient): void {
 		parachainApi = api;
 		console.log('Parachain connected via smoldot');
-
-		// Subscribe to finalized blocks
 		api.finalizedBlock$.subscribe((block) => {
 			console.log('Parachain finalized block:', block.number, block.hash);
 		});
@@ -35,8 +32,6 @@
 	function onRelaychainReady(api: PolkadotClient): void {
 		relaychainApi = api;
 		console.log('Relay chain connected via smoldot');
-
-		// Subscribe to finalized blocks
 		api.finalizedBlock$.subscribe((block) => {
 			console.log('Relay chain finalized block:', block.number, block.hash);
 		});
@@ -47,17 +42,26 @@
 	<h1 class="mb-8 text-center text-2xl font-bold">Parachain Block Inspector</h1>
 
 	<div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-		<Connection
-			chainSpec={parachainChainSpec}
-			chainName="Parachain (Smoldot)"
-			onApiReady={onParachainReady}
-		/>
-
-		<Connection
-			chainSpec={polkadotChainSpec}
-			chainName="Polkadot (Smoldot)"
-			onApiReady={onRelaychainReady}
-		/>
+		<div>
+			<ChainSpecLoader label="Load Parachain Spec" specLoaded={onParachainSpecLoaded} />
+			{#if parachainChainSpec}
+				<Connection
+					chainSpec={parachainChainSpec}
+					chainName={parachainName}
+					onApiReady={onParachainReady}
+				/>
+			{/if}
+		</div>
+		<div>
+			<ChainSpecLoader label="Load Relay Chain Spec" specLoaded={onRelaychainSpecLoaded} />
+			{#if relaychainChainSpec}
+				<Connection
+					chainSpec={relaychainChainSpec}
+					chainName={relaychainName}
+					onApiReady={onRelaychainReady}
+				/>
+			{/if}
+		</div>
 	</div>
 
 	{#if parachainApi && relaychainApi}
