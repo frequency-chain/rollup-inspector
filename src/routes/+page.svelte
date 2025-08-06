@@ -2,9 +2,10 @@
 	import Connection from '$lib/components/Connection.svelte';
 	import ChainSpecLoader from '$lib/components/ChainSpecLoader.svelte';
 	import type { PolkadotClient } from 'polkadot-api';
+	import ParachainBlocks from '$lib/components/ParachainBlocks.svelte';
 
-	let parachainApi = $state<PolkadotClient | null>(null);
-	let relaychainApi = $state<PolkadotClient | null>(null);
+	let parachainClient = $state<PolkadotClient | null>(null);
+	let relaychainClient = $state<PolkadotClient | null>(null);
 
 	let parachainChainSpec = $state<string | null>(null);
 	let parachainName = $state<string>('Parachain');
@@ -21,18 +22,18 @@
 		relaychainName = name;
 	}
 
-	function onParachainReady(api: PolkadotClient): void {
-		parachainApi = api;
+	function onParachainReady(client: PolkadotClient): void {
+		parachainClient = client;
 		console.log('Parachain connected via smoldot');
-		api.finalizedBlock$.subscribe((block) => {
+		client.finalizedBlock$.subscribe((block) => {
 			console.log('Parachain finalized block:', block.number, block.hash);
 		});
 	}
 
-	function onRelaychainReady(api: PolkadotClient): void {
-		relaychainApi = api;
+	function onRelaychainReady(client: PolkadotClient): void {
+		relaychainClient = client;
 		console.log('Relay chain connected via smoldot');
-		api.finalizedBlock$.subscribe((block) => {
+		client.finalizedBlock$.subscribe((block) => {
 			console.log('Relay chain finalized block:', block.number, block.hash);
 		});
 	}
@@ -43,7 +44,7 @@
 
 	<div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
 		<div>
-			<ChainSpecLoader label="Load Parachain Spec" specLoaded={onParachainSpecLoaded} />
+			<ChainSpecLoader label="Load Raw Parachain Spec" specLoaded={onParachainSpecLoaded} />
 			{#if parachainChainSpec}
 				<Connection
 					chainSpec={parachainChainSpec}
@@ -53,7 +54,7 @@
 			{/if}
 		</div>
 		<div>
-			<ChainSpecLoader label="Load Relay Chain Spec" specLoaded={onRelaychainSpecLoaded} />
+			<ChainSpecLoader label="Load Raw Relay Chain Spec" specLoaded={onRelaychainSpecLoaded} />
 			{#if relaychainChainSpec}
 				<Connection
 					chainSpec={relaychainChainSpec}
@@ -64,9 +65,10 @@
 		</div>
 	</div>
 
-	{#if parachainApi && relaychainApi}
+	{#if parachainClient && relaychainClient}
 		<div class="rounded-lg border border-green-200 bg-green-50 p-4 text-center">
-			<p class="text-green-800">Both smoldot connections ready - start building your inspector!</p>
+			<p class="text-green-800">Both connections ready!</p>
+			<ParachainBlocks client={parachainClient} />
 		</div>
 	{/if}
 </main>

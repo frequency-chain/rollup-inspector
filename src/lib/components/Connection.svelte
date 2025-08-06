@@ -3,12 +3,13 @@
 	import { getSmProvider } from 'polkadot-api/sm-provider';
 	import type { Chain, Client } from 'polkadot-api/smoldot';
 	import { startFromWorker } from 'polkadot-api/smoldot/from-worker';
+	import SmWorker from 'polkadot-api/smoldot/worker?worker';
 	import { onDestroy } from 'svelte';
 
 	interface Props {
-		chainSpec: string;
+		parachainSpec: string;
 		chainName?: string;
-		onApiReady?: (api: PolkadotClient) => void;
+		onApiReady?: (client: PolkadotClient) => void;
 	}
 
 	let { chainSpec, chainName = 'Chain', onApiReady = undefined }: Props = $props();
@@ -30,12 +31,10 @@
 			error = null;
 
 			// Create web worker
-			worker = new Worker(new URL('polkadot-api/smoldot/web-worker', import.meta.url), {
-				type: 'module'
-			});
+			worker = new Worker(new URL('polkadot-api/smoldot/worker', import.meta.url));
 
 			// Start smoldot from worker
-			smoldot = startFromWorker(worker);
+			smoldot = startFromWorker(new SmWorker());
 
 			// Add chain with the provided chainSpec
 			chain = await smoldot.addChain({ chainSpec });
@@ -46,6 +45,7 @@
 			connectionState = 'connected';
 			onApiReady?.(client);
 		} catch (err) {
+			console.error('Connection failed', err);
 			error = err instanceof Error ? err.message : 'Connection failed';
 			connectionState = 'error';
 			cleanup();
