@@ -17,6 +17,7 @@
 	let destroyed = $state<boolean>(false);
 
 	async function addBlock(block: BlockInfo) {
+		console.log('found new block', block);
 		const hash = block.hash;
 		let author: string | null = null;
 
@@ -36,14 +37,16 @@
 	}
 
 	$effect(() => {
-		if (!client) return;
+		console.log('in parachain block effect');
+		if (!client) {
+			console.error('NO CLIENT FOUND TO SUBSCRIBE TO BLOCKS!');
+			return;
+		}
 
 		blocks = [];
 		destroyed = false;
 
-		const sub = client.blocks$.subscribe((block: BlockInfo) => {
-			addBlock(block);
-		});
+		const sub = client.blocks$.subscribe(addBlock);
 
 		return () => {
 			sub?.unsubscribe();

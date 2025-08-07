@@ -24,15 +24,6 @@
 	function onConnectionReady(paraClient: PolkadotClient, relayClient: PolkadotClient): void {
 		parachainClient = paraClient;
 		relaychainClient = relayClient;
-		console.log('Both chains connected via smoldot');
-
-		paraClient.finalizedBlock$.subscribe((block) => {
-			console.log('Parachain finalized block:', block.number, block.hash);
-		});
-
-		relayClient.finalizedBlock$.subscribe((block) => {
-			console.log('Relay chain finalized block:', block.number, block.hash);
-		});
 	}
 </script>
 
@@ -54,7 +45,7 @@
 	{#if parachainClient && relaychainClient}
 		<div class="rounded-lg border border-green-200 bg-green-50 p-4 text-center">
 			<p class="text-green-800">Both connections ready!</p>
-			<ParachainBlocks client={parachainClient} />
 		</div>
+		<ParachainBlocks client={parachainClient} />
 	{/if}
 </main>
