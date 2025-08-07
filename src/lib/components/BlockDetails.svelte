@@ -1,18 +1,62 @@
 <script lang="ts">
 	import type { SystemEvent } from '@polkadot-api/observable-client';
+	import type { BlockHeader } from 'polkadot-api';
 
-	export let number: number;
-	export let events: SystemEvent[];
-	export let author: string | null = null;
-	export let hash: string | null = null;
+	type BlockDisplay = {
+		number: number;
+		events: SystemEvent[];
+		author: string | null;
+		hash: string;
+		header: BlockHeader;
+		relayIncludedAt?: number;
+		relayBackedAt?: number;
+	};
+
+	export let blockNumber: number;
+	export let blocks: BlockDisplay[];
 	export let isFinalized: boolean = false;
 </script>
 
-<div class="my-2 rounded border bg-white p-2 shadow">
-	<div><strong>Block #{number}</strong> {isFinalized ? '(finalized)' : ''}</div>
-	<div>Event Count: {events.length}</div>
-	<div>Author: {author ?? 'Unknown'}</div>
-	{#if hash}
-		<div class="text-xs break-all text-gray-500">Hash: {hash}</div>
+<div class="mb-4">
+	<h3 class="mb-2 text-lg font-semibold">
+		Block #{blockNumber}
+		{isFinalized ? '(finalized)' : ''}
+	</h3>
+
+	{#if blocks.length > 1}
+		<div class="mb-2 text-sm text-orange-600">
+			⚠️ Fork detected - {blocks.length} competing blocks
+		</div>
 	{/if}
+
+	{#each blocks as block (block.hash)}
+		<div class="mb-2 ml-4 border-l-2 border-gray-300 pl-4">
+			{#if blocks.length > 1}
+				<div class="mb-1 text-xs text-gray-600">
+					Hash: {block.hash.slice(0, 16)}...
+				</div>
+			{/if}
+
+			<div class="rounded border bg-white p-2 shadow">
+				<div>Event Count: {block.events.length}</div>
+				<div>Author: {block.author ?? 'Unknown'}</div>
+
+				<!-- Relay Chain Information -->
+				{#if block.relayIncludedAt !== undefined || block.relayBackedAt !== undefined}
+					<div class="mt-1 text-sm text-blue-600">
+						{#if block.relayIncludedAt !== undefined}
+							<div>📦 Included in relay block: #{block.relayIncludedAt}</div>
+						{/if}
+						{#if block.relayBackedAt !== undefined}
+							<div>✅ Backed in relay block: #{block.relayBackedAt}</div>
+						{/if}
+					</div>
+				{:else}
+					<div class="mt-1 text-sm text-gray-400">⏳ Relay chain info pending...</div>
+				{/if}
+
+				<div class="mt-1 text-xs break-all text-gray-500">Hash: {block.hash}</div>
+			</div>
+		</div>
+	{/each}
 </div>

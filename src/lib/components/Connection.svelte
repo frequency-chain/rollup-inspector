@@ -34,27 +34,22 @@
 
 			// Get smoldot client instance
 			const smoldot = smoldotService.getClient();
-
-			// Parse chain specs to get chain IDs for database keys
-			const relaySpec = JSON.parse(relaychainSpec);
-			const paraSpec = JSON.parse(parachainSpec);
-			const relayChainId = relaySpec.id || relaySpec.name;
-			const paraChainId = paraSpec.id || paraSpec.name;
+			console.debug('Smoldot loaded', smoldot);
 
 			// Add relaychain first with database persistence
 			const relaySmoldot = await smoldot.addChain({
-				chainSpec: relaychainSpec,
-				databaseContent: smoldotService.loadChainDatabase(relayChainId)
+				chainSpec: relaychainSpec
 			});
+			console.debug('Relay chain added to smoldot');
 			// The state creates a proxy, but we need the original for the smoldot lookup
 			relayChain = relaySmoldot;
 
 			// Add parachain with relaychain as potential relay and database persistence
 			parachainChain = await smoldot.addChain({
 				chainSpec: parachainSpec,
-				potentialRelayChains: [relaySmoldot],
-				databaseContent: smoldotService.loadChainDatabase(paraChainId)
+				potentialRelayChains: [relaySmoldot]
 			});
+			console.debug('Parachain added to smoldot');
 
 			// Create clients
 			relaychainClient = createClient(getSmProvider(relayChain));
@@ -67,8 +62,8 @@
 			syncStatus = 'Sync complete!';
 
 			// Start periodic database saving
-			startDatabaseSaving(relaychainClient, relayChainId, 'relay');
-			startDatabaseSaving(parachainClient, paraChainId, 'parachain');
+			// startDatabaseSaving(relaychainClient, relayChainId, 'relay');
+			// startDatabaseSaving(parachainClient, paraChainId, 'parachain');
 
 			connectionState = 'connected';
 			onApiReady?.(parachainClient, relaychainClient);
@@ -93,8 +88,9 @@
 
 			// Only remove chains, don't terminate the smoldot service
 			// as it may be used by other components
-			parachainChain?.remove();
-			relayChain?.remove();
+			// WW: Don't shut them down as we can reuse?
+			// parachainChain?.remove();
+			// relayChain?.remove();
 		} catch (err) {
 			console.error('Cleanup error:', err);
 		} finally {
@@ -123,34 +119,40 @@
 
 		syncStatus = `Waiting for ${specType} chain to sync...`;
 
-		// Wait for relay chain to produce at least one finalized block beyond genesis
-		await new Promise<void>((resolve) => {
-			const sub = client!.finalizedBlock$.subscribe(() => {
-				sub.unsubscribe();
-				resolve();
+		// Use chainHead.follow() for more efficient sync detection
+		await new Promise<void>((resolve, reject) => {
+			const sub = client.finalizedBlock$.subscribe({
+				next: () => {
+					sub.unsubscribe();
+					resolve();
+				},
+				error: (err) => {
+					sub.unsubscribe();
+					reject(err);
+				}
 			});
 		});
 	}
 
-	function startDatabaseSaving(client: PolkadotClient, chainId: string, chainType: string): void {
-		// Save database every 30 seconds
-		const timer = window.setInterval(async () => {
-			try {
-				// Use the chainHead_unstable_finalizedDatabase JSON-RPC method
-				const database = await client._request('chainHead_unstable_finalizedDatabase', [
-					1024 * 1024
-				]); // 1MB limit
-				if (database && typeof database === 'string') {
-					smoldotService.saveChainDatabase(chainId, database);
-					console.log(`Database saved for ${chainType} chain: ${chainId}`);
-				}
-			} catch (err) {
-				console.warn(`Failed to save database for ${chainType} chain ${chainId}:`, err);
-			}
-		}, 30000);
+	// function startDatabaseSaving(client: PolkadotClient, chainId: string, chainType: string): void {
+	// 	// Save database every 120 seconds
+	// 	const timer = window.setInterval(async () => {
+	// 		try {
+	// 			// Use the chainHead_unstable_finalizedDatabase JSON-RPC method
+	// 			const database = await client._request('chainHead_unstable_finalizedDatabase', [
+	// 				1024 * 1024
+	// 			]); // 1MB limit
+	// 			if (database && typeof database === 'string') {
+	// 				smoldotService.saveChainDatabase(chainId, database);
+	// 				console.log(`Database saved for ${chainType} chain: ${chainId}`);
+	// 			}
+	// 		} catch (err) {
+	// 			console.warn(`Failed to save database for ${chainType} chain ${chainId}:`, err);
+	// 		}
+	// 	}, 120000);
 
-		databaseSaveTimers.push(timer);
-	}
+	// 	databaseSaveTimers.push(timer);
+	// }
 
 	onDestroy(() => cleanup());
 </script>

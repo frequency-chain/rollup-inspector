@@ -1,5 +1,9 @@
 <script lang="ts">
 	import { SvelteMap } from 'svelte/reactivity';
+	import { chainSpec as polkadotSpec } from 'polkadot-api/chains/polkadot';
+	import { chainSpec as ksmcc3Spec } from 'polkadot-api/chains/ksmcc3';
+	import { chainSpec as paseoSpec } from 'polkadot-api/chains/paseo';
+	import { chainSpec as westend2Spec } from 'polkadot-api/chains/westend2';
 
 	interface Props {
 		label?: string;
@@ -25,6 +29,18 @@
 	let selectedPair = $state<string>('');
 	let availableSpecs = $state<Array<SpecPair>>([]);
 
+	// Parse relaychain specs first
+	const relaychainSpecs = new SvelteMap<string, string>();
+	for (const content of [polkadotSpec, ksmcc3Spec, paseoSpec, westend2Spec]) {
+		try {
+			const spec = JSON.parse(content);
+			console.debug('Loaded relay chain spec id', spec.id);
+			relaychainSpecs.set(spec.id || spec.name, content);
+		} catch (err) {
+			console.error(`Failed to parse relaychain spec ${content}:`, err);
+		}
+	}
+
 	$effect(() => {
 		if (parachainFileInput) {
 			const file = parachainFileInput.item(0);
@@ -43,24 +59,10 @@
 		try {
 			// Load all specs using Vite's import.meta.glob
 			const parachainModules = import.meta.glob('/src/lib/assets/specs/*.json', {
-				as: 'raw',
-				eager: true
-			});
-			const relaychainModules = import.meta.glob('/src/lib/assets/relay_specs/*.json', {
-				as: 'raw',
-				eager: true
-			});
-
-			// Parse relaychain specs first
-			const relaychainSpecs = new SvelteMap<string, string>();
-			for (const [path, content] of Object.entries(relaychainModules)) {
-				try {
-					const spec = JSON.parse(content);
-					relaychainSpecs.set(spec.id || spec.name, content);
-				} catch (err) {
-					console.error(`Failed to parse relaychain spec ${path}:`, err);
-				}
-			}
+				eager: true,
+				query: '?raw',
+				import: 'default'
+			}) as Record<string, string>;
 
 			// Parse parachain specs and match with relay chains
 			const pairs: SpecPair[] = [];
@@ -80,7 +82,7 @@
 							relaychainName: relayChainId
 						});
 					} else {
-						console.log(
+						console.error(
 							`Skipping parachain ${spec.name}: no matching relay chain found for ID '${relayChainId}'`
 						);
 					}
