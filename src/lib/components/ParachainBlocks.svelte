@@ -1,6 +1,5 @@
 <script lang="ts">
-	import type { BlockHeader, PolkadotClient } from 'polkadot-api';
-	import { blake2b } from '@noble/hashes/blake2b';
+	import { type BlockHeader, type PolkadotClient } from 'polkadot-api';
 	import type { SystemEvent } from '@polkadot-api/observable-client';
 	import BlockDetails from './BlockDetails.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -12,7 +11,6 @@
 	import type { BlockInfo } from 'polkadot-api';
 	import { onMount } from 'svelte';
 	import { getExtrinsicDecoder, type DecodedExtrinsic } from '@polkadot-api/tx-utils';
-	import { toHex } from 'polkadot-api/utils';
 
 	let {
 		parachainClient,
@@ -26,6 +24,8 @@
 		number: number;
 		events: SystemEvent[];
 		author: string | null;
+		absoluteSlot?: number;
+		collatorSlot?: number;
 		hash: string;
 		header: BlockHeader;
 		relayIncludedAt?: number;
@@ -39,8 +39,14 @@
 	let relayHashesByNumber = new SvelteMap<number, string>(); // block number -> hash
 	let relayHashesByStateRoot = new SvelteMap<string, string>(); // hash -> State root
 	let destroyed = $state<boolean>(false);
-	let relayChainMetadata = $derived(relayClient.getUnsafeApi().apis.Metadata.metadata());
+	// let relayChainMetadata = $derived(relayClient.getUnsafeApi().apis.Metadata.metadata());
 	let parachainMetadata = $derived(parachainClient.getUnsafeApi().apis.Metadata.metadata());
+	let parachainCollators = $derived(
+		parachainClient
+			.getUnsafeApi()
+			.apis.AuraApi.authorities()
+			.then((x) => x.map((y: { asHex: () => string }) => y.asHex()))
+	);
 
 	// Get parachain ID from chain state
 	let parachainId = $state<number | null>(null);
@@ -59,58 +65,6 @@
 		}
 	}
 
-	// Extract block author from extrinsics
-	function extractAuthorFromExtrinsics(extrinsics: DecodedExtrinsic[]): string | null {
-		try {
-			// Look for the first extrinsic which is usually the set_validation_data inherent
-			// The author is typically the one who submitted this inherent
-			for (const ext of extrinsics) {
-				if (ext.signature) {
-					// If extrinsic is signed, the signer might be the block author
-					const signer = ext.signature.signer || ext.signature.address;
-					if (signer) {
-						return signer.toString();
-					}
-				}
-			}
-			return null;
-		} catch (error) {
-			console.debug('Could not extract author from extrinsics:', error);
-			return null;
-		}
-	}
-
-	// Extract block author from events
-	function extractAuthorFromEvents(events: SystemEvent[]): string | null {
-		try {
-			for (const event of events) {
-				// Look for Balances.Deposit events in the first extrinsic (usually fees to block author)
-				if (
-					event.event?.type === 'Balances' &&
-					event.event.value?.type === 'Deposit' &&
-					event.phase?.type === 'ApplyExtrinsic' &&
-					event.phase.value === 0
-				) {
-					const depositData = event.event.value.value;
-					if (depositData && typeof depositData === 'object' && 'account' in depositData) {
-						return depositData.account?.toString() || null;
-					}
-				}
-
-				// Look for authorship events
-				if (event.event?.type === 'Authorship') {
-					if (event.event.value?.type === 'BlockAuthor') {
-						return event.event.value.value?.toString() || null;
-					}
-				}
-			}
-			return null;
-		} catch (error) {
-			console.debug('Could not extract author from events:', error);
-			return null;
-		}
-	}
-
 	// Extract relay parent info from extrinsics (set_validation_data inherent)
 	function extractRelayParentFromExtrinsics(extrinsics: DecodedExtrinsic[]): {
 		relayParentHash?: string;
@@ -122,7 +76,6 @@
 					(ext.call?.type as string) === 'ParachainSystem' &&
 					ext.call?.value?.type === 'set_validation_data'
 			);
-			console.log(setValidationData);
 			const validationData = setValidationData!.call.value.value?.data?.validation_data;
 			return {
 				relayParentNumber: Number(validationData.relay_parent_number),
@@ -170,8 +123,13 @@
 				console.debug('Could not get block body:', err);
 			}
 
-			// Extract author from extrinsics or events
-			const author = extractAuthorFromExtrinsics(extrinsics) || extractAuthorFromEvents(events);
+			// Extract author from the header digest
+			const slotHex = (header.digests![0]!.value! as { payload: string }).payload.replace('0x', '');
+			const absoluteSlot = parseInt('0x' + slotHex.match(/../g)!.reverse().join(''));
+			const collators = await parachainCollators;
+			const collatorSlot = absoluteSlot % collators.length;
+			const authorHex = collators[collatorSlot];
+			const author = authorHex;
 
 			// Extract relay parent info from extrinsics (validation data inherent)
 			const { relayParentHash, relayParentNumber } = extractRelayParentFromExtrinsics(extrinsics);
@@ -180,6 +138,8 @@
 				number: block.number,
 				events,
 				author,
+				absoluteSlot,
+				collatorSlot,
 				hash: block.hash,
 				header,
 				relayIncludedAt: undefined, // Will be filled by relay chain events
@@ -261,7 +221,7 @@
 							relayHashesByStateRoot.set(keptHeader.stateRoot, hash);
 						}
 					} catch (err) {
-						console.debug('Could not get header for kept relay block:', hash);
+						console.debug('Could not get header for kept relay block:', hash, err);
 					}
 				}
 			}

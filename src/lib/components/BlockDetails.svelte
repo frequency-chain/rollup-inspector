@@ -6,6 +6,8 @@
 		number: number;
 		events: SystemEvent[];
 		author: string | null;
+		absoluteSlot?: number;
+		collatorSlot?: number;
 		hash: string;
 		header: BlockHeader;
 		relayIncludedAt?: number;
@@ -42,6 +44,11 @@
 			<div class="rounded border bg-white p-2 shadow">
 				<div>Event Count: {block.events.length}</div>
 				<div>Author: {block.author ?? 'Unknown'}</div>
+				{#if block.absoluteSlot !== undefined && block.collatorSlot !== undefined}
+					<div class="text-sm text-purple-600">
+						🎰 Slot: {block.collatorSlot} (Absolute #{block.absoluteSlot})
+					</div>
+				{/if}
 
 				<!-- Relay Parent Information -->
 				{#if block.relayParentNumber !== undefined}
