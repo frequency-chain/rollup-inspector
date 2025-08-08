@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { BlockInfo, PolkadotClient } from 'polkadot-api';
+import type { PolkadotClient } from 'polkadot-api';
 import type { SystemEvent } from '@polkadot-api/observable-client';
 
 export interface ParachainInclusionInfo {
@@ -21,7 +21,7 @@ export interface ParachainBlockUpdate {
  */
 export async function parseRelayChainEvents(
 	relayClient: PolkadotClient,
-	relayBlock: BlockInfo
+	relayBlock: { hash: string; number: number }
 ): Promise<ParachainInclusionInfo[]> {
 	try {
 		const events = (await relayClient

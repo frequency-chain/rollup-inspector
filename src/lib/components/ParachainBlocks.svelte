@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { BlockInfo, BlockHeader, PolkadotClient } from 'polkadot-api';
+	import type { BlockHeader, PolkadotClient } from 'polkadot-api';
 	import type { SystemEvent } from '@polkadot-api/observable-client';
 	import BlockDetails from './BlockDetails.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -8,15 +8,15 @@
 		createParachainBlockUpdates,
 		type ParachainBlockUpdate
 	} from '$lib/services/relayChainParser';
+	import type { BlockInfo } from 'polkadot-api';
+	import { onMount } from 'svelte';
 
 	let {
 		parachainClient,
-		relayClient,
-		parachainSpec
+		relayClient
 	}: {
 		parachainClient: PolkadotClient;
 		relayClient: PolkadotClient;
-		parachainSpec: string;
 	} = $props();
 
 	type BlockDisplay = {
@@ -33,16 +33,22 @@
 	let relayBlocks = new SvelteMap<string, number>(); // hash -> block number
 	let destroyed = $state<boolean>(false);
 
-	// Extract parachain ID from spec once at load time
-	let parachainId = $derived(() => {
+	// Get parachain ID from chain state
+	let parachainId = $state<number | null>(null);
+
+	// Fetch parachain ID from chain state once connected
+	async function fetchParachainId() {
 		try {
-			const spec = JSON.parse(parachainSpec);
-			return spec.para_id || spec.paraId || spec.id;
+			// Try to get parachain ID from ParachainInfo pallet
+			const id = await parachainClient.getUnsafeApi().query.ParachainInfo.ParachainId.getValue();
+			parachainId = Number(id);
+			console.log('Parachain ID:', parachainId);
 		} catch (error) {
-			console.warn('Could not parse parachain ID from spec:', error);
-			return null;
+			console.warn('Could not fetch parachain ID from chain state:', error);
+			// You could set a default or ask user to input manually
+			parachainId = null;
 		}
-	});
+	}
 
 	async function addBlock(block: BlockInfo) {
 		try {
@@ -123,14 +129,14 @@
 			// Parse relay chain events to find parachain inclusions/backings
 			const inclusionInfos = await parseRelayChainEvents(relayClient, relayBlock);
 
-			// Use the parachain ID from the spec
-			if (!parachainId()) {
-				console.warn('Parachain ID not available from spec');
+			// Use the parachain ID from chain state
+			if (!parachainId) {
+				console.warn('Parachain ID not available from chain state');
 				return;
 			}
 
 			// Create block updates for this parachain
-			const updates = createParachainBlockUpdates(inclusionInfos, parachainId());
+			const updates = createParachainBlockUpdates(inclusionInfos, parachainId);
 
 			// Apply updates to existing parachain blocks
 			applyRelayInfoUpdates(updates);
@@ -165,11 +171,14 @@
 		}
 	}
 
-	$effect(() => {
+	onMount(() => {
 		if (!parachainClient || !relayClient) {
 			console.error('NO CLIENT FOUND TO SUBSCRIBE TO BLOCKS!');
 			return;
 		}
+
+		// Fetch parachain ID once on mount
+		fetchParachainId();
 
 		const parachainSub = parachainClient.blocks$.subscribe(addBlock);
 		const relaySub = relayClient.blocks$.subscribe(addRelayBlock);
