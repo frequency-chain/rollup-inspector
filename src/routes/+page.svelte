@@ -1,11 +1,11 @@
 <script lang="ts">
-	import Connection from '$lib/components/Connection.svelte';
+	import Connection, { type onConnections } from '$lib/components/Connection.svelte';
 	import ChainSpecLoader from '$lib/components/ChainSpecLoader.svelte';
 	import type { PolkadotClient } from 'polkadot-api';
 	import ParachainBlocks from '$lib/components/ParachainBlocks.svelte';
 
-	let parachainClient = $state<PolkadotClient | null>(null);
-	let relayClient = $state<PolkadotClient | null>(null);
+	let parachainClient = $state.raw<PolkadotClient | null>(null);
+	let relayClient = $state.raw<PolkadotClient | null>(null);
 
 	let parachainChainSpec = $state<string>();
 	let relaychainChainSpec = $state<string>();
@@ -21,9 +21,9 @@
 		relaychainChainSpec = relaychainSpec;
 	}
 
-	function onConnectionReady(para: PolkadotClient, relay: PolkadotClient): void {
-		parachainClient = para;
-		relayClient = relay;
+	function onConnectionReady(connections: onConnections): void {
+		parachainClient = connections.parachainClient;
+		relayClient = connections.relaychainClient;
 	}
 </script>
 
@@ -42,10 +42,10 @@
 		/>
 	</div>
 
-	{#if parachainClient && relayClient}
+	{#if parachainClient && relayClient && parachainChainSpec}
 		<div class="rounded-lg border border-green-200 bg-green-50 p-4 text-center">
 			<p class="text-green-800">Both connections ready!</p>
 		</div>
-		<ParachainBlocks {parachainClient} {relayClient} parachainSpec={parachainChainSpec!} />
+		<ParachainBlocks {parachainClient} {relayClient} parachainSpec={parachainChainSpec} />
 	{/if}
 </main>

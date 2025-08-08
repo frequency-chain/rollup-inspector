@@ -19,7 +19,7 @@
 
 <div class="mb-4">
 	<h3 class="mb-2 text-lg font-semibold">
-		Block #{blockNumber}
+		Block #{blockNumber.toLocaleString()}
 		{isFinalized ? '(finalized)' : ''}
 	</h3>
 

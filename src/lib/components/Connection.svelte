@@ -4,11 +4,15 @@
 	import type { Chain } from 'polkadot-api/smoldot';
 	import { onDestroy } from 'svelte';
 	import { smoldotService } from '$lib/services/smoldot';
+	export type onConnections = {
+		parachainClient: PolkadotClient;
+		relaychainClient: PolkadotClient;
+	};
 
 	interface Props {
 		parachainSpec?: string;
 		relaychainSpec?: string;
-		onApiReady?: (parachainClient: PolkadotClient, relaychainClient: PolkadotClient) => void;
+		onApiReady?: (connections: onConnections) => void;
 	}
 
 	let { parachainSpec = '', relaychainSpec = '', onApiReady = undefined }: Props = $props();
@@ -16,10 +20,8 @@
 	type ConnectionState = 'disconnected' | 'connecting' | 'syncing' | 'connected' | 'error';
 
 	let connectionState = $state<ConnectionState>('disconnected');
-	let parachainClient = $state<PolkadotClient | null>(null);
-	let relaychainClient = $state<PolkadotClient | null>(null);
-	let relayChain = $state<Chain | null>(null);
-	let parachainChain = $state<Chain | null>(null);
+	let relayChain = $state.raw<Chain | null>(null);
+	let parachainChain = $state.raw<Chain | null>(null);
 
 	let error = $state<string | null>(null);
 	let syncStatus = $state<string>('Initializing...');
@@ -52,8 +54,8 @@
 			console.debug('Parachain added to smoldot');
 
 			// Create clients
-			relaychainClient = createClient(getSmProvider(relayChain));
-			parachainClient = createClient(getSmProvider(parachainChain));
+			const relaychainClient = createClient(getSmProvider(relayChain));
+			const parachainClient = createClient(getSmProvider(parachainChain));
 
 			// Wait for both chains to sync
 			connectionState = 'syncing';
@@ -67,6 +69,10 @@
 
 			connectionState = 'connected';
 			onApiReady?.(parachainClient, relaychainClient);
+			onApiReady?.({
+				parachainClient,
+				relaychainClient,
+			});
 		} catch (err) {
 			console.error('Connection failed', err);
 			error = err instanceof Error ? err.message : 'Connection failed';
@@ -94,8 +100,6 @@
 		} catch (err) {
 			console.error('Cleanup error:', err);
 		} finally {
-			parachainClient = null;
-			relaychainClient = null;
 			parachainChain = null;
 			relayChain = null;
 			error = null;
