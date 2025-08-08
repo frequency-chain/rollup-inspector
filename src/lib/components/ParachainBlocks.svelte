@@ -126,7 +126,9 @@
 			const validationData = setValidationData!.call.value.value?.data?.validation_data;
 			return {
 				relayParentNumber: Number(validationData.relay_parent_number),
-				relayParentHash: relayHashesByStateRoot.get(validationData.relay_parent_storage_root)
+				relayParentHash: relayHashesByStateRoot.get(
+					validationData.relay_parent_storage_root.asHex()
+				)
 			};
 		} catch (error) {
 			console.debug('Could not extract relay parent from extrinsics:', error);
@@ -223,24 +225,48 @@
 	}
 
 	async function addRelayBlock(block: BlockInfo) {
-		// Store relay block info
-		relayNumbersByHash.set(block.hash, block.number);
-		relayHashesByNumber.set(block.number, block.hash);
-		// TODO: Get the storage Root
-		relayHashesByStateRoot;
+		try {
+			// Get the relay block header to extract state root
+			const header = await relayClient.getBlockHeader(block.hash);
 
-		// Cleanup old relay blocks (keep last 1000)
-		if (relayNumbersByHash.size > 1000) {
-			const entries = Array.from(relayNumbersByHash.entries());
-			const sortedEntries = entries.sort((a, b) => b[1] - a[1]); // Sort by block number desc
-			const toKeep = sortedEntries.slice(0, 1000);
-			relayNumbersByHash.clear();
-			relayHashesByNumber.clear();
-			// TODO handle the relayHashesByStateRoot
-			toKeep.map(([hash, blockNum]) => {
-				relayNumbersByHash.set(hash, blockNum);
-				relayHashesByNumber.set(blockNum, hash);
-			});
+			// Store relay block info
+			relayNumbersByHash.set(block.hash, block.number);
+			relayHashesByNumber.set(block.number, block.hash);
+
+			// Store mapping from state root to block hash
+			if (header.stateRoot) {
+				relayHashesByStateRoot.set(header.stateRoot, block.hash);
+			}
+
+			// Cleanup old relay blocks (keep last 1000)
+			if (relayNumbersByHash.size > 1000) {
+				const entries = Array.from(relayNumbersByHash.entries());
+				const sortedEntries = entries.sort((a, b) => b[1] - a[1]); // Sort by block number desc
+				const toKeep = sortedEntries.slice(0, 1000);
+
+				// Clear all maps
+				relayNumbersByHash.clear();
+				relayHashesByNumber.clear();
+				relayHashesByStateRoot.clear();
+
+				// Rebuild maps with kept entries
+				for (const [hash, blockNum] of toKeep) {
+					relayNumbersByHash.set(hash, blockNum);
+					relayHashesByNumber.set(blockNum, hash);
+
+					// Re-fetch header to get state root for kept blocks
+					try {
+						const keptHeader = await relayClient.getBlockHeader(hash);
+						if (keptHeader.stateRoot) {
+							relayHashesByStateRoot.set(keptHeader.stateRoot, hash);
+						}
+					} catch (err) {
+						console.debug('Could not get header for kept relay block:', hash);
+					}
+				}
+			}
+		} catch (error) {
+			console.warn('Error processing relay block:', error);
 		}
 
 		// Try to match parachain blocks with relay blocks
