@@ -39,6 +39,7 @@
 		"vitest": "^3.2.4"
 	},
 	"dependencies": {
+		"@noble/hashes": "^1.8.0",
 		"@polkadot-api/descriptors": "file:.papi/descriptors",
 		"@polkadot-api/tx-utils": "^0.1.2",
 		"polkadot-api": "^1.15.2"

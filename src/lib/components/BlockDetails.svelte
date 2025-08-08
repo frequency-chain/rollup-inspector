@@ -10,6 +10,8 @@
 		header: BlockHeader;
 		relayIncludedAt?: number;
 		relayBackedAt?: number;
+		relayParentHash?: string;
+		relayParentNumber?: number;
 	};
 
 	export let blockNumber: number;
@@ -41,7 +43,17 @@
 				<div>Event Count: {block.events.length}</div>
 				<div>Author: {block.author ?? 'Unknown'}</div>
 
-				<!-- Relay Chain Information -->
+				<!-- Relay Parent Information -->
+				{#if block.relayParentNumber !== undefined}
+					<div class="mt-1 text-sm text-green-600">
+						<div>🔗 Based on relay block: #{block.relayParentNumber}</div>
+						<div class="text-xs text-gray-500">
+							Relay Block Hash: {block.relayParentHash}
+						</div>
+					</div>
+				{/if}
+
+				<!-- Relay Chain Inclusion/Backing Information -->
 				{#if block.relayIncludedAt !== undefined || block.relayBackedAt !== undefined}
 					<div class="mt-1 text-sm text-blue-600">
 						{#if block.relayIncludedAt !== undefined}
@@ -51,8 +63,6 @@
 							<div>✅ Backed in relay block: #{block.relayBackedAt}</div>
 						{/if}
 					</div>
-				{:else}
-					<div class="mt-1 text-sm text-gray-400">⏳ Relay chain info pending...</div>
 				{/if}
 
 				<div class="mt-1 text-xs break-all text-gray-500">Hash: {block.hash}</div>

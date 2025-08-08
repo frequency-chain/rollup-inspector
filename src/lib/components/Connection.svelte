@@ -23,6 +23,9 @@
 	let relayRpcUrl = $state<string>('');
 	let parachainRpcUrl = $state<string>('');
 
+	let relaychainClient: PolkadotClient;
+	let parachainClient: PolkadotClient;
+
 	// RPC endpoint options
 	const polkadotRpcEndpoints = [
 		{ name: 'Blockops', url: 'wss://polkadot-public-rpc.blockops.network/ws' },
@@ -45,9 +48,6 @@
 		{ name: 'OnFinality', url: 'wss://frequency-polkadot.api.onfinality.io/public-ws' }
 	];
 
-	let parachainProvider: any = null;
-	let relayProvider: any = null;
-
 	async function connect() {
 		if (!relayRpcUrl || !parachainRpcUrl) {
 			error = 'Please provide both relay chain and parachain RPC URLs';
@@ -59,13 +59,9 @@
 			error = null;
 			syncStatus = 'Connecting to RPC endpoints...';
 
-			// Create WebSocket providers
-			relayProvider = getWsProvider(relayRpcUrl);
-			parachainProvider = getWsProvider(parachainRpcUrl);
-
 			// Create clients
-			const relaychainClient = createClient(relayProvider);
-			const parachainClient = createClient(parachainProvider);
+			relaychainClient = createClient(getWsProvider(relayRpcUrl));
+			parachainClient = createClient(getWsProvider(parachainRpcUrl));
 
 			// Wait for connection to be established
 			connectionState = 'syncing';
@@ -74,7 +70,7 @@
 			// Wait for both chains to be ready
 			await waitForSync(relaychainClient, 'relay');
 			await waitForSync(parachainClient, 'parachain');
-			
+
 			syncStatus = 'Sync complete!';
 			connectionState = 'connected';
 
@@ -104,11 +100,11 @@
 	function cleanup(): void {
 		try {
 			// Providers will be cleaned up automatically when disconnected
-			parachainProvider = null;
-			relayProvider = null;
 			error = null;
 			connectionState = 'disconnected';
 			syncStatus = '';
+			relaychainClient?.destroy();
+			parachainClient?.destroy();
 		} catch (err) {
 			console.error('Cleanup error:', err);
 		}
@@ -164,11 +160,11 @@
 			list="polkadot-endpoints"
 			bind:value={relayRpcUrl}
 			placeholder="wss://polkadot-rpc.publicnode.com"
-			class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+			class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 			disabled={connectionState === 'connecting' || connectionState === 'syncing'}
 		/>
 		<datalist id="polkadot-endpoints">
-			{#each polkadotRpcEndpoints as endpoint}
+			{#each polkadotRpcEndpoints as endpoint (endpoint.url)}
 				<option value={endpoint.url}>{endpoint.name} ({endpoint.url})</option>
 			{/each}
 		</datalist>
@@ -183,11 +179,11 @@
 			list="frequency-endpoints"
 			bind:value={parachainRpcUrl}
 			placeholder="wss://1.rpc.frequency.xyz"
-			class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+			class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 			disabled={connectionState === 'connecting' || connectionState === 'syncing'}
 		/>
 		<datalist id="frequency-endpoints">
-			{#each frequencyRpcEndpoints as endpoint}
+			{#each frequencyRpcEndpoints as endpoint (endpoint.url)}
 				<option value={endpoint.url}>{endpoint.name} ({endpoint.url})</option>
 			{/each}
 		</datalist>
@@ -197,15 +193,17 @@
 		<button
 			onclick={connect}
 			disabled={connectionState === 'connecting' || connectionState === 'syncing'}
-			class="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+			class="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 		>
-			{connectionState === 'connecting' || connectionState === 'syncing' ? 'Connecting...' : 'Connect'}
+			{connectionState === 'connecting' || connectionState === 'syncing'
+				? 'Connecting...'
+				: 'Connect'}
 		</button>
 
 		{#if connectionState === 'connected'}
 			<button
 				onclick={disconnect}
-				class="rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+				class="rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
 			>
 				Disconnect
 			</button>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { BlockHeader, PolkadotClient } from 'polkadot-api';
+	import { blake2b } from '@noble/hashes/blake2b';
 	import type { SystemEvent } from '@polkadot-api/observable-client';
 	import BlockDetails from './BlockDetails.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -10,6 +11,8 @@
 	} from '$lib/services/relayChainParser';
 	import type { BlockInfo } from 'polkadot-api';
 	import { onMount } from 'svelte';
+	import { getExtrinsicDecoder, type DecodedExtrinsic } from '@polkadot-api/tx-utils';
+	import { toHex } from 'polkadot-api/utils';
 
 	let {
 		parachainClient,
@@ -27,11 +30,17 @@
 		header: BlockHeader;
 		relayIncludedAt?: number;
 		relayBackedAt?: number;
+		relayParentHash?: string;
+		relayParentNumber?: number;
 	};
 
 	let blocksByNumber = new SvelteMap<number, BlockDisplay[]>();
-	let relayBlocks = new SvelteMap<string, number>(); // hash -> block number
+	let relayNumbersByHash = new SvelteMap<string, number>(); // hash -> block number
+	let relayHashesByNumber = new SvelteMap<number, string>(); // block number -> hash
+	let relayHashesByStateRoot = new SvelteMap<string, string>(); // hash -> State root
 	let destroyed = $state<boolean>(false);
+	let relayChainMetadata = $derived(relayClient.getUnsafeApi().apis.Metadata.metadata());
+	let parachainMetadata = $derived(parachainClient.getUnsafeApi().apis.Metadata.metadata());
 
 	// Get parachain ID from chain state
 	let parachainId = $state<number | null>(null);
@@ -50,8 +59,84 @@
 		}
 	}
 
+	// Extract block author from extrinsics
+	function extractAuthorFromExtrinsics(extrinsics: DecodedExtrinsic[]): string | null {
+		try {
+			// Look for the first extrinsic which is usually the set_validation_data inherent
+			// The author is typically the one who submitted this inherent
+			for (const ext of extrinsics) {
+				if (ext.signature) {
+					// If extrinsic is signed, the signer might be the block author
+					const signer = ext.signature.signer || ext.signature.address;
+					if (signer) {
+						return signer.toString();
+					}
+				}
+			}
+			return null;
+		} catch (error) {
+			console.debug('Could not extract author from extrinsics:', error);
+			return null;
+		}
+	}
+
+	// Extract block author from events
+	function extractAuthorFromEvents(events: SystemEvent[]): string | null {
+		try {
+			for (const event of events) {
+				// Look for Balances.Deposit events in the first extrinsic (usually fees to block author)
+				if (
+					event.event?.type === 'Balances' &&
+					event.event.value?.type === 'Deposit' &&
+					event.phase?.type === 'ApplyExtrinsic' &&
+					event.phase.value === 0
+				) {
+					const depositData = event.event.value.value;
+					if (depositData && typeof depositData === 'object' && 'account' in depositData) {
+						return depositData.account?.toString() || null;
+					}
+				}
+
+				// Look for authorship events
+				if (event.event?.type === 'Authorship') {
+					if (event.event.value?.type === 'BlockAuthor') {
+						return event.event.value.value?.toString() || null;
+					}
+				}
+			}
+			return null;
+		} catch (error) {
+			console.debug('Could not extract author from events:', error);
+			return null;
+		}
+	}
+
+	// Extract relay parent info from extrinsics (set_validation_data inherent)
+	function extractRelayParentFromExtrinsics(extrinsics: DecodedExtrinsic[]): {
+		relayParentHash?: string;
+		relayParentNumber?: number;
+	} {
+		try {
+			const setValidationData = extrinsics.find(
+				(ext) =>
+					(ext.call?.type as string) === 'ParachainSystem' &&
+					ext.call?.value?.type === 'set_validation_data'
+			);
+			console.log(setValidationData);
+			const validationData = setValidationData!.call.value.value?.data?.validation_data;
+			return {
+				relayParentNumber: Number(validationData.relay_parent_number),
+				relayParentHash: relayHashesByStateRoot.get(validationData.relay_parent_storage_root)
+			};
+		} catch (error) {
+			console.debug('Could not extract relay parent from extrinsics:', error);
+			return {};
+		}
+	}
+
 	async function addBlock(block: BlockInfo) {
 		try {
+			// Get block header and events (we'll need to get extrinsics separately)
 			const [header, events] = await Promise.all([
 				parachainClient.getBlockHeader(block.hash),
 				parachainClient
@@ -59,14 +144,46 @@
 					.query.System.Events.getValue({ at: block.hash }) as unknown as SystemEvent[]
 			]);
 
+			// Get array of hex-encoded extrinsics and decode them
+			let extrinsics: DecodedExtrinsic[] = [];
+			try {
+				const blockBodyHex = await parachainClient.getBlockBody(block.hash);
+
+				if (blockBodyHex && Array.isArray(blockBodyHex)) {
+					// Get metadata to create extrinsic decoder
+					const extrinsicDecoder = getExtrinsicDecoder((await parachainMetadata).asBytes());
+
+					extrinsics = blockBodyHex
+						.map((extHex: string, index: number) => {
+							try {
+								return extrinsicDecoder(extHex);
+							} catch (decodeErr) {
+								console.debug(`Failed to decode extrinsic ${index}:`, decodeErr);
+								return null;
+							}
+						})
+						.filter((x) => x !== null);
+				}
+			} catch (err) {
+				console.debug('Could not get block body:', err);
+			}
+
+			// Extract author from extrinsics or events
+			const author = extractAuthorFromExtrinsics(extrinsics) || extractAuthorFromEvents(events);
+
+			// Extract relay parent info from extrinsics (validation data inherent)
+			const { relayParentHash, relayParentNumber } = extractRelayParentFromExtrinsics(extrinsics);
+
 			const blockDisplay: BlockDisplay = {
 				number: block.number,
 				events,
-				author: null, // TODO: Extract author if needed
+				author,
 				hash: block.hash,
 				header,
 				relayIncludedAt: undefined, // Will be filled by relay chain events
-				relayBackedAt: undefined // Will be filled by relay chain events
+				relayBackedAt: undefined, // Will be filled by relay chain events
+				relayParentHash,
+				relayParentNumber
 			};
 
 			// Only update if component is still mounted
@@ -107,15 +224,23 @@
 
 	async function addRelayBlock(block: BlockInfo) {
 		// Store relay block info
-		relayBlocks.set(block.hash, block.number);
+		relayNumbersByHash.set(block.hash, block.number);
+		relayHashesByNumber.set(block.number, block.hash);
+		// TODO: Get the storage Root
+		relayHashesByStateRoot;
 
 		// Cleanup old relay blocks (keep last 1000)
-		if (relayBlocks.size > 1000) {
-			const entries = Array.from(relayBlocks.entries());
+		if (relayNumbersByHash.size > 1000) {
+			const entries = Array.from(relayNumbersByHash.entries());
 			const sortedEntries = entries.sort((a, b) => b[1] - a[1]); // Sort by block number desc
 			const toKeep = sortedEntries.slice(0, 1000);
-			relayBlocks.clear();
-			toKeep.forEach(([hash, blockNum]) => relayBlocks.set(hash, blockNum));
+			relayNumbersByHash.clear();
+			relayHashesByNumber.clear();
+			// TODO handle the relayHashesByStateRoot
+			toKeep.map(([hash, blockNum]) => {
+				relayNumbersByHash.set(hash, blockNum);
+				relayHashesByNumber.set(blockNum, hash);
+			});
 		}
 
 		// Try to match parachain blocks with relay blocks
