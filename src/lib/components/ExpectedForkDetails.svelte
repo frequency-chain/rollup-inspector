@@ -10,10 +10,6 @@
 </script>
 
 <div class="space-y-3">
-	<div class="mb-3 font-medium text-blue-700">
-		Expected Forks (Count: {blocks.length})
-	</div>
-
 	<div>
 		<span class="font-medium text-gray-600">Author:</span>
 		<span class="font-mono break-all">{blocks[0].author}</span>
@@ -23,6 +19,13 @@
 		<span class="font-medium text-gray-600">Slot:</span>
 		<span class="font-mono text-purple-600">
 			{blocks[0].collatorSlot} (#{blocks[0].absoluteSlot})
+		</span>
+	</div>
+
+	<div>
+		<span class="font-medium text-gray-600">Candidate Count:</span>
+		<span class="font-mono">
+			{blocks.length}
 		</span>
 	</div>
 

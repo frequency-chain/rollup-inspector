@@ -3,7 +3,6 @@
 	import type { BlockDisplay } from './ParachainBlocks.svelte';
 	import ExpectedForkDetails from './ExpectedForkDetails.svelte';
 	import BlockTimeline from './BlockTimeline.svelte';
-	import BlockCard from './BlockCard.svelte';
 
 	let {
 		blockNumber,
@@ -90,11 +89,7 @@
 			<div class="space-y-4 rounded-lg bg-gray-100 p-4 shadow">
 				<!-- Expected Forks -->
 				{#each slotGroups.values() as slotBlocks (slotBlocks[0].absoluteSlot)}
-					{#if slotBlocks.length > 1}
-						<ExpectedForkDetails blocks={slotBlocks} />
-					{:else}
-						<BlockCard block={slotBlocks[0]} />
-					{/if}
+					<ExpectedForkDetails blocks={slotBlocks} />
 				{/each}
 			</div>
 		</div>
