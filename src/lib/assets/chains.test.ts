@@ -19,10 +19,10 @@ describe('Chain Assets', () => {
 		});
 
 		it('has parachains with valid relay chain info', () => {
-			const parachains = polkadotChains.filter(chain => chain.relayChainInfo);
+			const parachains = polkadotChains.filter((chain) => chain.relayChainInfo);
 			expect(parachains.length).toBeGreaterThan(0);
-			
-			parachains.forEach(parachain => {
+
+			parachains.forEach((parachain) => {
 				expect(parachain.relayChainInfo.id).toBe('polkadot');
 				expect(typeof parachain.relayChainInfo.parachain).toBe('number');
 				expect(typeof parachain.relayChainInfo.isSystem).toBe('boolean');
@@ -30,10 +30,10 @@ describe('Chain Assets', () => {
 		});
 
 		it('has valid RPC endpoints', () => {
-			polkadotChains.forEach(chain => {
+			polkadotChains.forEach((chain) => {
 				expect(typeof chain.rpcs).toBe('object');
 				expect(Object.keys(chain.rpcs).length).toBeGreaterThan(0);
-				
+
 				Object.entries(chain.rpcs).forEach(([name, url]) => {
 					expect(typeof name).toBe('string');
 					expect(typeof url).toBe('string');
@@ -68,12 +68,12 @@ describe('Chain Assets', () => {
 		const allChains = [...polkadotChains, ...kusamaChains, ...westendChains, ...paseoChains];
 
 		it('all chains have required properties', () => {
-			allChains.forEach(chain => {
+			allChains.forEach((chain) => {
 				expect(chain).toHaveProperty('id');
 				expect(chain).toHaveProperty('display');
 				expect(chain).toHaveProperty('rpcs');
 				expect(chain).toHaveProperty('nativeToken');
-				
+
 				expect(typeof chain.id).toBe('string');
 				expect(typeof chain.display).toBe('string');
 				expect(typeof chain.rpcs).toBe('object');
@@ -82,7 +82,7 @@ describe('Chain Assets', () => {
 		});
 
 		it('native tokens have symbol and decimals', () => {
-			allChains.forEach(chain => {
+			allChains.forEach((chain) => {
 				expect(chain.nativeToken).toHaveProperty('symbol');
 				expect(chain.nativeToken).toHaveProperty('decimals');
 				expect(typeof chain.nativeToken.symbol).toBe('string');
@@ -91,17 +91,17 @@ describe('Chain Assets', () => {
 		});
 
 		it('relay chains and parachains are properly categorized', () => {
-			const relayChains = allChains.filter(chain => !chain.relayChainInfo);
-			const parachains = allChains.filter(chain => chain.relayChainInfo);
+			const relayChains = allChains.filter((chain) => !chain.relayChainInfo);
+			const parachains = allChains.filter((chain) => chain.relayChainInfo);
 
 			// Should have exactly 4 relay chains
 			expect(relayChains.length).toBe(4);
-			
+
 			// Should have some parachains
 			expect(parachains.length).toBeGreaterThan(10);
 
 			// All relay chain IDs should be unique
-			const relayIds = relayChains.map(chain => chain.id);
+			const relayIds = relayChains.map((chain) => chain.id);
 			expect(new Set(relayIds).size).toBe(relayIds.length);
 		});
 	});

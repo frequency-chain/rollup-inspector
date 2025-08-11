@@ -18,7 +18,7 @@ describe('relayBlockManager', () => {
 
 			addRelayBlock(block);
 			const retrieved = getRelayBlockByHash('0x1234test');
-			
+
 			expect(retrieved).toBeTruthy();
 			expect(retrieved?.hash).toBe(block.hash);
 			expect(retrieved?.number).toBe(block.number);
@@ -38,7 +38,7 @@ describe('relayBlockManager', () => {
 
 			addRelayBlock(block);
 			const retrieved = getRelayBlockByNumber(2000);
-			
+
 			expect(retrieved).toBeTruthy();
 			expect(retrieved?.hash).toBe(block.hash);
 		});

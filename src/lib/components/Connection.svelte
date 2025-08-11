@@ -2,7 +2,7 @@
 	import { createClient, type PolkadotClient } from 'polkadot-api';
 	import { getWsProvider } from 'polkadot-api/ws-provider/web';
 	import { onDestroy } from 'svelte';
-	
+
 	// Import chain data
 	import polkadotChains from '$lib/assets/polkadot.json';
 	import kusamaChains from '$lib/assets/kusama.json';
@@ -36,28 +36,26 @@
 	const allChains = [...polkadotChains, ...kusamaChains, ...westendChains, ...paseoChains];
 
 	// Get relay chains (chains without relayChainInfo)
-	const relayChains = allChains.filter(chain => !chain.relayChainInfo);
+	const relayChains = allChains.filter((chain) => !chain.relayChainInfo);
 
 	// Get selected relay chain info
 	let selectedRelayChain = $derived.by(() => {
 		if (!relayRpcUrl) return null;
 		// Find relay chain that has this URL in its rpcs
-		return relayChains.find(chain => 
-			Object.values(chain.rpcs).includes(relayRpcUrl)
-		) || null;
+		return relayChains.find((chain) => Object.values(chain.rpcs).includes(relayRpcUrl)) || null;
 	});
 
 	// Get parachains for selected relay chain
 	let availableParachains = $derived.by(() => {
 		if (!selectedRelayChain) return [];
-		return allChains.filter(chain => 
-			chain.relayChainInfo && chain.relayChainInfo.id === selectedRelayChain.id
+		return allChains.filter(
+			(chain) => chain.relayChainInfo && chain.relayChainInfo.id === selectedRelayChain.id
 		);
 	});
 
 	// Generate endpoint options for datalists
 	let relayEndpoints = $derived.by(() => {
-		const endpoints: Array<{chain: string, name: string, url: string}> = [];
+		const endpoints: Array<{ chain: string; name: string; url: string }> = [];
 		for (const chain of relayChains) {
 			for (const [name, url] of Object.entries(chain.rpcs)) {
 				endpoints.push({
@@ -71,7 +69,7 @@
 	});
 
 	let parachainEndpoints = $derived.by(() => {
-		const endpoints: Array<{chain: string, name: string, url: string}> = [];
+		const endpoints: Array<{ chain: string; name: string; url: string }> = [];
 		for (const chain of availableParachains) {
 			for (const [name, url] of Object.entries(chain.rpcs)) {
 				endpoints.push({
@@ -220,7 +218,9 @@
 				id="parachain-rpc"
 				list="parachain-endpoints"
 				bind:value={parachainRpcUrl}
-				placeholder={selectedRelayChain ? `Select or enter ${selectedRelayChain.display} parachain RPC URL` : "Select relay chain first"}
+				placeholder={selectedRelayChain
+					? `Select or enter ${selectedRelayChain.display} parachain RPC URL`
+					: 'Select relay chain first'}
 				class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 				disabled={connectionState === 'connecting' || connectionState === 'syncing'}
 			/>

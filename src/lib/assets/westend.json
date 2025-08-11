@@ -1,140 +1,140 @@
 [
-  {
-    "id": "westend",
-    "display": "Westend Relay Chain",
-    "hasChainSpecs": true,
-    "rpcs": {
-      "Dwellir": "wss://westend-rpc.dwellir.com",
-      "Dwellir Tunisia": "wss://westend-rpc-tn.dwellir.com",
-      "IBP1": "wss://rpc.ibp.network/westend",
-      "IBP2": "wss://westend.dotters.network",
-      "OnFinality": "wss://westend.api.onfinality.io/public-ws",
-      "Parity": "wss://westend-rpc.polkadot.io",
-      "RadiumBlock": "wss://westend.public.curie.radiumblock.co/ws"
-    },
-    "nativeToken": {
-      "symbol": "WND",
-      "decimals": 12
-    }
-  },
-  {
-    "id": "westend_asset_hub",
-    "display": "Westend AssetHub",
-    "rpcs": {
-      "Dwellir": "wss://asset-hub-westend-rpc.dwellir.com",
-      "Dwellir Tunisia": "wss://westmint-rpc-tn.dwellir.com",
-      "IBP1": "wss://sys.ibp.network/westmint",
-      "IBP2": "wss://asset-hub-westend.dotters.network",
-      "Parity": "wss://westend-asset-hub-rpc.polkadot.io"
-    },
-    "relayChainInfo": {
-      "id": "westend",
-      "isSystem": true,
-      "parachain": 1000
-    },
-    "nativeToken": {
-      "symbol": "WND",
-      "decimals": 12
-    },
-    "hasChainSpecs": true
-  },
-  {
-    "id": "westend_bridge_hub",
-    "display": "Westend BridgeHub",
-    "rpcs": {
-      "Dwellir": "wss://bridge-hub-westend-rpc.dwellir.com",
-      "Dwellir Tunisia": "wss://westend-bridge-hub-rpc-tn.dwellir.com",
-      "IBP1": "wss://sys.ibp.network/bridgehub-westend",
-      "IBP2": "wss://bridge-hub-westend.dotters.network",
-      "Parity": "wss://westend-bridge-hub-rpc.polkadot.io"
-    },
-    "relayChainInfo": {
-      "id": "westend",
-      "isSystem": true,
-      "parachain": 1002
-    },
-    "nativeToken": {
-      "symbol": "WND",
-      "decimals": 12
-    },
-    "hasChainSpecs": false
-  },
-  {
-    "id": "westend_collectives",
-    "display": "Westend Collectives",
-    "rpcs": {
-      "Dwellir": "wss://collectives-westend-rpc.dwellir.com",
-      "Dwellir Tunisia": "wss://westend-collectives-rpc-tn.dwellir.com",
-      "IBP1": "wss://sys.ibp.network/collectives-westend",
-      "IBP2": "wss://collectives-westend.dotters.network",
-      "Parity": "wss://westend-collectives-rpc.polkadot.io"
-    },
-    "relayChainInfo": {
-      "id": "westend",
-      "isSystem": true,
-      "parachain": 1001
-    },
-    "nativeToken": {
-      "symbol": "WND",
-      "decimals": 12
-    },
-    "hasChainSpecs": true
-  },
-  {
-    "id": "westend_core_time",
-    "display": "Westend Coretime",
-    "rpcs": {
-      "Dwellir": "wss://coretime-westend-rpc.dwellir.com",
-      "IBP1": "wss://sys.ibp.network/coretime-westend",
-      "IBP2": "wss://coretime-westend.dotters.network",
-      "Parity": "wss://westend-coretime-rpc.polkadot.io"
-    },
-    "relayChainInfo": {
-      "id": "westend",
-      "isSystem": true,
-      "parachain": 1005
-    },
-    "nativeToken": {
-      "symbol": "WND",
-      "decimals": 12
-    },
-    "hasChainSpecs": false
-  },
-  {
-    "id": "westend_people_chain",
-    "display": "Westend People",
-    "rpcs": {
-      "Dwellir": "wss://people-westend-rpc.dwellir.com",
-      "IBP1": "wss://sys.ibp.network/people-westend",
-      "IBP2": "wss://people-westend.dotters.network",
-      "Parity": "wss://westend-people-rpc.polkadot.io"
-    },
-    "relayChainInfo": {
-      "id": "westend",
-      "isSystem": true,
-      "parachain": 1004
-    },
-    "nativeToken": {
-      "symbol": "WND",
-      "decimals": 12
-    },
-    "hasChainSpecs": false
-  },
-  {
-    "id": "westend_penpal",
-    "display": "Penpal",
-    "rpcs": {
-      "Parity": "wss://westend-penpal-rpc.polkadot.io"
-    },
-    "relayChainInfo": {
-      "id": "westend",
-      "isSystem": false,
-      "parachain": 2042
-    },
-    "nativeToken": {
-      "symbol": "PEN",
-      "decimals": 12
-    },
-    "hasChainSpecs": false
-  }
+	{
+		"id": "westend",
+		"display": "Westend Relay Chain",
+		"hasChainSpecs": true,
+		"rpcs": {
+			"Dwellir": "wss://westend-rpc.dwellir.com",
+			"Dwellir Tunisia": "wss://westend-rpc-tn.dwellir.com",
+			"IBP1": "wss://rpc.ibp.network/westend",
+			"IBP2": "wss://westend.dotters.network",
+			"OnFinality": "wss://westend.api.onfinality.io/public-ws",
+			"Parity": "wss://westend-rpc.polkadot.io",
+			"RadiumBlock": "wss://westend.public.curie.radiumblock.co/ws"
+		},
+		"nativeToken": {
+			"symbol": "WND",
+			"decimals": 12
+		}
+	},
+	{
+		"id": "westend_asset_hub",
+		"display": "Westend AssetHub",
+		"rpcs": {
+			"Dwellir": "wss://asset-hub-westend-rpc.dwellir.com",
+			"Dwellir Tunisia": "wss://westmint-rpc-tn.dwellir.com",
+			"IBP1": "wss://sys.ibp.network/westmint",
+			"IBP2": "wss://asset-hub-westend.dotters.network",
+			"Parity": "wss://westend-asset-hub-rpc.polkadot.io"
+		},
+		"relayChainInfo": {
+			"id": "westend",
+			"isSystem": true,
+			"parachain": 1000
+		},
+		"nativeToken": {
+			"symbol": "WND",
+			"decimals": 12
+		},
+		"hasChainSpecs": true
+	},
+	{
+		"id": "westend_bridge_hub",
+		"display": "Westend BridgeHub",
+		"rpcs": {
+			"Dwellir": "wss://bridge-hub-westend-rpc.dwellir.com",
+			"Dwellir Tunisia": "wss://westend-bridge-hub-rpc-tn.dwellir.com",
+			"IBP1": "wss://sys.ibp.network/bridgehub-westend",
+			"IBP2": "wss://bridge-hub-westend.dotters.network",
+			"Parity": "wss://westend-bridge-hub-rpc.polkadot.io"
+		},
+		"relayChainInfo": {
+			"id": "westend",
+			"isSystem": true,
+			"parachain": 1002
+		},
+		"nativeToken": {
+			"symbol": "WND",
+			"decimals": 12
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "westend_collectives",
+		"display": "Westend Collectives",
+		"rpcs": {
+			"Dwellir": "wss://collectives-westend-rpc.dwellir.com",
+			"Dwellir Tunisia": "wss://westend-collectives-rpc-tn.dwellir.com",
+			"IBP1": "wss://sys.ibp.network/collectives-westend",
+			"IBP2": "wss://collectives-westend.dotters.network",
+			"Parity": "wss://westend-collectives-rpc.polkadot.io"
+		},
+		"relayChainInfo": {
+			"id": "westend",
+			"isSystem": true,
+			"parachain": 1001
+		},
+		"nativeToken": {
+			"symbol": "WND",
+			"decimals": 12
+		},
+		"hasChainSpecs": true
+	},
+	{
+		"id": "westend_core_time",
+		"display": "Westend Coretime",
+		"rpcs": {
+			"Dwellir": "wss://coretime-westend-rpc.dwellir.com",
+			"IBP1": "wss://sys.ibp.network/coretime-westend",
+			"IBP2": "wss://coretime-westend.dotters.network",
+			"Parity": "wss://westend-coretime-rpc.polkadot.io"
+		},
+		"relayChainInfo": {
+			"id": "westend",
+			"isSystem": true,
+			"parachain": 1005
+		},
+		"nativeToken": {
+			"symbol": "WND",
+			"decimals": 12
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "westend_people_chain",
+		"display": "Westend People",
+		"rpcs": {
+			"Dwellir": "wss://people-westend-rpc.dwellir.com",
+			"IBP1": "wss://sys.ibp.network/people-westend",
+			"IBP2": "wss://people-westend.dotters.network",
+			"Parity": "wss://westend-people-rpc.polkadot.io"
+		},
+		"relayChainInfo": {
+			"id": "westend",
+			"isSystem": true,
+			"parachain": 1004
+		},
+		"nativeToken": {
+			"symbol": "WND",
+			"decimals": 12
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "westend_penpal",
+		"display": "Penpal",
+		"rpcs": {
+			"Parity": "wss://westend-penpal-rpc.polkadot.io"
+		},
+		"relayChainInfo": {
+			"id": "westend",
+			"isSystem": false,
+			"parachain": 2042
+		},
+		"nativeToken": {
+			"symbol": "PEN",
+			"decimals": 12
+		},
+		"hasChainSpecs": false
+	}
 ]

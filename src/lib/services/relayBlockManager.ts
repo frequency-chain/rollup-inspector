@@ -27,9 +27,9 @@ let relayBlockManager: {
  */
 function initializeRelayBlockManager(maxAge: number = 3600000) {
 	if (relayBlockManager) return relayBlockManager;
-	
+
 	const db = new Loki('relayBlocks');
-	
+
 	const collection = db.addCollection<RelayBlockDoc>('blocks', {
 		indices: ['hash', 'number', 'stateRoot'],
 		ttl: maxAge, // Auto-cleanup after 1 hour by default
@@ -55,10 +55,10 @@ function getRelayBlockManager() {
  */
 export function addRelayBlock(block: Omit<RelayBlockDoc, 'createdAt'>): void {
 	const manager = getRelayBlockManager();
-	
+
 	// Remove existing block with same hash to avoid duplicates
 	manager.collection.findAndRemove({ hash: block.hash });
-	
+
 	// Add new block with timestamp
 	manager.collection.insert({
 		...block,
@@ -73,7 +73,7 @@ export function addRelayBlock(block: Omit<RelayBlockDoc, 'createdAt'>): void {
 			.simplesort('number')
 			.limit(count - 800) // Keep 800 to avoid frequent cleanup
 			.data();
-		
+
 		manager.collection.remove(oldestBlocks);
 	}
 }
@@ -153,7 +153,7 @@ export async function processAndAddRelayBlock(
 							return null;
 						}
 					})
-					.filter(x => x !== null);
+					.filter((x) => x !== null);
 
 				timestamp = extractTimestampFromExtrinsics(extrinsics) || undefined;
 			}
@@ -170,10 +170,8 @@ export async function processAndAddRelayBlock(
 
 		addRelayBlock(blockData);
 		return getRelayBlockByHash(blockInfo.hash);
-
 	} catch (error) {
 		console.warn('Failed to process relay block:', blockInfo.hash, error);
 		return null;
 	}
 }
-

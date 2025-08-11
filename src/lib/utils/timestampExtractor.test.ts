@@ -49,10 +49,7 @@ describe('timestampExtractor utilities', () => {
 		});
 
 		it('returns undefined for array with no timestamp extrinsic', () => {
-			const extrinsics = [
-				{ call: { type: 'other' } },
-				{ call: { type: 'balances' } }
-			] as any[];
+			const extrinsics = [{ call: { type: 'other' } }, { call: { type: 'balances' } }] as any[];
 			const result = extractTimestampFromExtrinsics(extrinsics);
 			expect(result).toBeUndefined();
 		});

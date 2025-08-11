@@ -66,7 +66,9 @@ export async function parseRelayChainEvents(
 			.query.System.Events.getValue({ at: relayBlock.hash })) as unknown as SystemEvent[];
 
 		return events
-			.map((event) => parseParaInclusionEvent(event, relayBlock.number, relayBlock.hash, relayBlock.timestamp))
+			.map((event) =>
+				parseParaInclusionEvent(event, relayBlock.number, relayBlock.hash, relayBlock.timestamp)
+			)
 			.filter((info): info is ParachainInclusionInfo => info !== null);
 	} catch (error) {
 		console.warn('Failed to parse relay chain events:', error);

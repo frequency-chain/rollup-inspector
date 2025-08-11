@@ -31,7 +31,7 @@ npm run dev
 ## Scripts
 
 - `npm run dev` - Development server
-- `npm run build` - Production build  
+- `npm run build` - Production build
 - `npm run check` - Type checking
 - `npm run lint` - Code linting
 
