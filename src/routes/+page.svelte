@@ -13,15 +13,32 @@
 	}
 </script>
 
-<main class="mx-auto max-w-4xl p-6">
-	<h1 class="mb-8 text-center text-2xl font-bold">Parachain Block Inspector</h1>
+<main class="min-h-screen bg-gray-50 p-4">
+	<div class="mx-auto max-w-none">
+		<h1 class="mb-6 text-center text-2xl font-bold text-gray-800">Parachain Block Inspector</h1>
 
-	<div class="mb-8">
-		<Connection onApiReady={onConnectionReady} />
+		<!-- Connection and Status - 50/50 split on wide screens -->
+		<div class="mb-6 flex flex-col xl:flex-row gap-6">
+			<!-- Connection Section (Left) -->
+			<div class="xl:w-1/2">
+				<Connection onApiReady={onConnectionReady} />
+			</div>
+			
+			<!-- Chain Status Section (Right) -->
+			<div class="xl:w-1/2">
+				{#if parachainClient && relayClient}
+					<ChainStatus {parachainClient} {relayClient} />
+				{:else}
+					<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+						<h2 class="text-xl font-semibold text-gray-400">Chain Status</h2>
+						<p class="mt-4 text-gray-500">Connect to view chain status</p>
+					</div>
+				{/if}
+			</div>
+		</div>
+
+		{#if parachainClient && relayClient}
+			<ParachainBlocks {parachainClient} {relayClient} />
+		{/if}
 	</div>
-
-	{#if parachainClient && relayClient}
-		<ChainStatus {parachainClient} {relayClient} />
-		<ParachainBlocks {parachainClient} {relayClient} />
-	{/if}
 </main>

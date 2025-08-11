@@ -187,53 +187,57 @@
 </script>
 
 <!-- Chain Status Widget -->
-<div class="mb-4 rounded-lg border bg-white shadow-sm">
-	<div class="px-4 py-3 border-b bg-gray-50 rounded-t-lg">
+<div class="mb-6 rounded-lg border bg-white shadow-sm">
+	<div class="px-6 py-3 border-b bg-gray-50 rounded-t-lg">
 		<h2 class="font-semibold text-gray-800">Chain Status</h2>
 	</div>
 	
-	<div class="p-4">
+	<div class="p-6">
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-			<!-- Parachain Status -->
-			<div class="space-y-2">
-				<h3 class="text-sm font-medium text-gray-600 mb-2 border-l-2 border-purple-400 pl-2">
-					Parachain
-				</h3>
-				
-				<div class="grid grid-cols-2 gap-2 text-xs">
-					<div class="bg-green-50 rounded p-2 border border-green-200">
-						<div class="text-green-700 font-medium">Best</div>
-						<div class="font-mono text-lg text-green-800">{parachainLatestBlock?.number?.toLocaleString() ?? '—'}</div>
-						<div class="text-green-600">{formatTimeAgo(parachainLatestBlock?.timestamp)}</div>
-					</div>
-					
-					<div class="bg-blue-50 rounded p-2 border border-blue-200">
-						<div class="text-blue-700 font-medium">Finalized</div>
-						<div class="font-mono text-lg text-blue-800">{parachainFinalizedBlock?.number?.toLocaleString() ?? '—'}</div>
-						<div class="text-blue-600">{formatTimeAgo(parachainFinalizedBlock?.timestamp)}</div>
-					</div>
+			<!-- First Row - Best Blocks -->
+			<div class="bg-green-50 rounded-lg p-4 border border-green-200">
+				<div class="flex items-center gap-2 mb-2">
+					<div class="w-2 h-2 bg-purple-400 rounded-full"></div>
+					<span class="text-sm font-medium text-gray-600">Parachain Best</span>
 				</div>
+				<div class="font-mono text-2xl font-bold text-green-800 mb-1">
+					{parachainLatestBlock?.number?.toLocaleString() ?? '—'}
+				</div>
+				<div class="text-sm text-green-600">{formatTimeAgo(parachainLatestBlock?.timestamp)}</div>
 			</div>
 
-			<!-- Relay Chain Status -->
-			<div class="space-y-2">
-				<h3 class="text-sm font-medium text-gray-600 mb-2 border-l-2 border-orange-400 pl-2">
-					Relay Chain
-				</h3>
-				
-				<div class="grid grid-cols-2 gap-2 text-xs">
-					<div class="bg-green-50 rounded p-2 border border-green-200">
-						<div class="text-green-700 font-medium">Best</div>
-						<div class="font-mono text-lg text-green-800">{relayLatestBlock?.number?.toLocaleString() ?? '—'}</div>
-						<div class="text-green-600">{formatTimeAgo(relayLatestBlock?.timestamp)}</div>
-					</div>
-					
-					<div class="bg-blue-50 rounded p-2 border border-blue-200">
-						<div class="text-blue-700 font-medium">Finalized</div>
-						<div class="font-mono text-lg text-blue-800">{relayFinalizedBlock?.number?.toLocaleString() ?? '—'}</div>
-						<div class="text-blue-600">{formatTimeAgo(relayFinalizedBlock?.timestamp)}</div>
-					</div>
+			<div class="bg-green-50 rounded-lg p-4 border border-green-200">
+				<div class="flex items-center gap-2 mb-2">
+					<div class="w-2 h-2 bg-orange-400 rounded-full"></div>
+					<span class="text-sm font-medium text-gray-600">Relay Best</span>
 				</div>
+				<div class="font-mono text-2xl font-bold text-green-800 mb-1">
+					{relayLatestBlock?.number?.toLocaleString() ?? '—'}
+				</div>
+				<div class="text-sm text-green-600">{formatTimeAgo(relayLatestBlock?.timestamp)}</div>
+			</div>
+
+			<!-- Second Row - Finalized Blocks -->
+			<div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+				<div class="flex items-center gap-2 mb-2">
+					<div class="w-2 h-2 bg-purple-400 rounded-full"></div>
+					<span class="text-sm font-medium text-gray-600">Parachain Finalized</span>
+				</div>
+				<div class="font-mono text-2xl font-bold text-blue-800 mb-1">
+					{parachainFinalizedBlock?.number?.toLocaleString() ?? '—'}
+				</div>
+				<div class="text-sm text-blue-600">{formatTimeAgo(parachainFinalizedBlock?.timestamp)}</div>
+			</div>
+
+			<div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+				<div class="flex items-center gap-2 mb-2">
+					<div class="w-2 h-2 bg-orange-400 rounded-full"></div>
+					<span class="text-sm font-medium text-gray-600">Relay Finalized</span>
+				</div>
+				<div class="font-mono text-2xl font-bold text-blue-800 mb-1">
+					{relayFinalizedBlock?.number?.toLocaleString() ?? '—'}
+				</div>
+				<div class="text-sm text-blue-600">{formatTimeAgo(relayFinalizedBlock?.timestamp)}</div>
 			</div>
 		</div>
 	</div>

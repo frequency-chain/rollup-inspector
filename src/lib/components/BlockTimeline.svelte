@@ -68,33 +68,33 @@
 </script>
 
 {#if timelineEvents.length > 0 && baseTimestamp}
-	<div class="mb-4 rounded border bg-gray-50 p-3">
-		<div class="mb-2 font-medium text-gray-700">Block Timeline</div>
-		<div class="space-y-1 text-sm">
+	<div class="mb-4 rounded border bg-gray-50 p-4">
+		<div class="mb-3 font-medium text-gray-700 text-base">Block Timeline</div>
+		<div class="space-y-2">
 			{#each timelineEvents as event, index (event.hash + event.type)}
-				<div class="flex items-start gap-2">
-					<div class="w-12 text-right text-gray-500">
+				<div class="flex items-start gap-3">
+					<div class="w-14 text-right text-gray-500 font-mono text-sm">
 						{index === 0
 							? 'T+0s'
 							: formatTimeDifference(getTimeDifferenceInSeconds(event.timestamp, baseTimestamp))}
 					</div>
 					<div class="flex-1">
-						<div>
+						<div class="text-base">
 							{#if event.type === 'block'}
-								<span class="text-blue-600">📦 Block announced</span>
-								<span class="text-gray-500">#{event.blockNumber}</span>
+								<span class="text-blue-600 font-medium">📦 Block announced</span>
+								<span class="text-gray-600">#{event.blockNumber}</span>
 							{:else if event.type === 'backed'}
-								<span class="text-green-600">✅ Backed in relay</span>
-								<span class="text-gray-500">#{event.blockNumber}</span>
+								<span class="text-green-600 font-medium">✅ Backed in relay</span>
+								<span class="text-gray-600">#{event.blockNumber}</span>
 							{:else if event.type === 'included'}
-								<span class="text-purple-600">📮 Included in relay</span>
-								<span class="text-gray-500">#{event.blockNumber}</span>
+								<span class="text-purple-600 font-medium">📮 Included in relay</span>
+								<span class="text-gray-600">#{event.blockNumber}</span>
 							{/if}
 						</div>
-						<div class="ml-6">
-							<BlockHash hash={event.hash || ''} size={14} />
+						<div class="ml-2 mt-2">
+							<BlockHash hash={event.hash || ''} size={24} />
 						</div>
-						<div class="ml-6 text-gray-400">{timestampToISO(event.timestamp)}</div>
+						<div class="ml-2 text-gray-500 text-sm mt-1">{timestampToISO(event.timestamp)}</div>
 					</div>
 				</div>
 			{/each}

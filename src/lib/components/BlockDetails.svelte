@@ -60,72 +60,104 @@
 	});
 </script>
 
-<div class="mb-6 border rounded-lg bg-white shadow">
-	<div class="p-4 border-b">
-		<h3 class="text-lg font-semibold">
+<div class="mb-6 overflow-hidden rounded-lg border bg-white shadow">
+	<div class="border-b bg-gray-50 px-6 py-4">
+		<h3 class="text-lg font-semibold text-gray-800">
 			Block #{blockNumber.toLocaleString()}
-			{isFinalized ? '(finalized)' : ''}
+			{#if isFinalized}<span class="ml-2 text-sm text-blue-600">(finalized)</span>{/if}
 		</h3>
 	</div>
 
 	<!-- Two Column Layout within each block -->
-	<div class="flex flex-col lg:flex-row">
+	<div class="flex flex-col xl:flex-row">
 		<!-- Timeline Column (Left) -->
-		<div class="lg:w-1/3 p-4 bg-gray-50">
-			<h4 class="font-medium mb-3">Timeline</h4>
-			<BlockTimeline {blocks} />
-			
+		<div class="border-r border-gray-200 bg-gray-50 p-6 xl:w-1/2">
+			<h4 class="mb-4 font-medium text-gray-700">Timeline</h4>
+			<div class="overflow-x-auto">
+				<BlockTimeline {blocks} />
+			</div>
+
 			<!-- Summary info -->
-			<div class="mt-3 space-y-2 text-sm">
-				<div>Total Blocks: {blocks.length}</div>
+			<div class="mt-4 space-y-2 text-sm">
+				<div class="flex justify-between">
+					<span class="text-gray-600">Total Candidates:</span>
+					<span class="font-medium">{blocks.length}</span>
+				</div>
 				{#if expectedForks.length > 0}
-					<div class="text-blue-600">Expected Forks: {expectedForks.length}</div>
+					<div class="flex justify-between">
+						<span class="text-gray-600">Expected Forks:</span>
+						<span class="font-medium text-blue-600">{expectedForks.length}</span>
+					</div>
 				{/if}
 				{#if unexpectedForks.length > 1}
-					<div class="text-orange-600">Unexpected Forks: {unexpectedForks.length}</div>
+					<div class="flex justify-between">
+						<span class="text-gray-600">Unexpected Forks:</span>
+						<span class="font-medium text-orange-600">{unexpectedForks.length}</span>
+					</div>
 				{/if}
 			</div>
 		</div>
 
 		<!-- Details Column (Right) -->
-		<div class="lg:w-2/3 p-4">
-			<h4 class="font-medium mb-3">Block Details</h4>
-			
-			<!-- Expected Forks -->
-			{#each expectedForks as forkGroup (forkGroup[0].absoluteSlot)}
-				<ExpectedForkDetails {forkGroup} />
-			{/each}
+		<div class="p-6 xl:w-1/2">
+			<h4 class="mb-4 font-medium text-gray-700">Block Details</h4>
 
-			<!-- Unexpected Forks -->
-			{#if unexpectedForks.length > 1}
-				<div class="mb-2 text-sm text-orange-600">
-					⚠️ Unexpected fork - {unexpectedForks.length} competing blocks
-				</div>
-			{/if}
-
-			{#each unexpectedForks as block (block.hash)}
-				<div class="mb-2 ml-4 border-l-2 border-gray-300 pl-4">
-					<div class="rounded border bg-white p-2 shadow">
-						<div>Author: {block.author ?? 'Unknown'}</div>
-						<div class="text-purple-600">
-							🎰 Slot: {block.collatorSlot} (Absolute #{block.absoluteSlot})
-						</div>
-
-						<div class="text-gray-600">
-							<div class="flex items-center gap-2">
-								<span>Candidate Hash:</span>
-								<BlockHash hash={block.hash} size={16} />
-							</div>
-							{#if block.timestamp}
-								<div class="ml-7 text-xs text-gray-400">{timestampToISO(block.timestamp)}</div>
-							{/if}
-						</div>
-						<div>Event Count: {block.events.length}</div>
-
-						<BlockRelayInfo {block} />
+			<div class="space-y-4">
+				<!-- Expected Forks -->
+				{#each expectedForks as forkGroup (forkGroup[0].absoluteSlot)}
+					<div class="rounded-lg p-2 shadow">
+						<ExpectedForkDetails {forkGroup} />
 					</div>
+				{/each}
+
+				<!-- Unexpected Forks -->
+				{#if unexpectedForks.length > 1}
+					<div
+						class="mb-4 rounded-lg border border-orange-200 bg-orange-50 p-3 text-sm text-orange-800"
+					>
+						⚠️ Unexpected fork detected - {unexpectedForks.length} competing blocks
+					</div>
+				{/if}
+
+				<div class="space-y-3">
+					{#each unexpectedForks as block (block.hash)}
+						<div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+							<div class="space-y-2">
+								<div>
+									<span class="font-medium text-gray-600">Author:</span>
+									<span class="font-mono break-all">{block.author ?? 'Unknown'}</span>
+								</div>
+
+								<div>
+									<span class="font-medium text-gray-600">Slot:</span>
+									<span class="font-mono text-purple-600">
+										{block.collatorSlot} (#{block.absoluteSlot})
+									</span>
+								</div>
+								<div>
+									<span class="font-medium text-gray-600">Events:</span>
+									<span class="font-mono">{block.events.length}</span>
+								</div>
+
+								{#if block.timestamp}
+									<div>
+										<span class="font-medium text-gray-600">Block Timestamp:</span>
+										<span class="text-sm text-gray-500">{timestampToISO(block.timestamp)}</span>
+									</div>
+								{/if}
+
+								<div>
+									<BlockHash hash={block.hash} size={24} />
+								</div>
+
+								<div class="border-t border-gray-300 pt-3">
+									<BlockRelayInfo {block} />
+								</div>
+							</div>
+						</div>
+					{/each}
 				</div>
-			{/each}
+			</div>
 		</div>
 	</div>
 </div>
