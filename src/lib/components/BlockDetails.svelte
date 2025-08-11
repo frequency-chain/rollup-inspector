@@ -5,6 +5,7 @@
 	import BlockRelayInfo from './BlockRelayInfo.svelte';
 	import BlockTimeline from './BlockTimeline.svelte';
 	import BlockHash from './BlockHash.svelte';
+	import { timestampToISO } from '$lib/utils/timestampExtractor';
 
 	let {
 		blockNumber,
@@ -88,9 +89,14 @@
 					🎰 Slot: {block.collatorSlot} (Absolute #{block.absoluteSlot})
 				</div>
 
-				<div class="flex items-center gap-2 text-gray-600">
-					<span>Candidate Hash:</span>
-					<BlockHash hash={block.hash} size={16} />
+				<div class="text-gray-600">
+					<div class="flex items-center gap-2">
+						<span>Candidate Hash:</span>
+						<BlockHash hash={block.hash} size={16} />
+					</div>
+					{#if block.timestamp}
+						<div class="ml-7 text-xs text-gray-400">{timestampToISO(block.timestamp)}</div>
+					{/if}
 				</div>
 				<div>Event Count: {block.events.length}</div>
 

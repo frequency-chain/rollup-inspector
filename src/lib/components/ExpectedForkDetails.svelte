@@ -2,6 +2,7 @@
 	import BlockRelayInfo from './BlockRelayInfo.svelte';
 	import type { BlockDisplay } from './ParachainBlocks.svelte';
 	import BlockHash from './BlockHash.svelte';
+	import { timestampToISO } from '$lib/utils/timestampExtractor';
 
 	let {
 		forkGroup
@@ -22,9 +23,14 @@
 			<div class="font-medium">Expected Fork Candidates:</div>
 			{#each forkGroup as block (block.hash)}
 				<div class="mt-1 ml-2 border-t pt-1 text-sm">
-					<div class="flex items-center gap-2 text-gray-600">
-						<span>Candidate Hash:</span>
-						<BlockHash hash={block.hash} size={16} />
+					<div class="text-gray-600">
+						<div class="flex items-center gap-2">
+							<span>Candidate Hash:</span>
+							<BlockHash hash={block.hash} size={16} />
+						</div>
+						{#if block.timestamp}
+							<div class="ml-7 text-xs text-gray-400">{timestampToISO(block.timestamp)}</div>
+						{/if}
 					</div>
 					<div>Event Count: {block.events.length}</div>
 
