@@ -34,6 +34,8 @@ npm run dev
 - `npm run build` - Production build
 - `npm run check` - Type checking
 - `npm run lint` - Code linting
+- `npm run format` - Code automatic formatting
+- `npm test` - Run test suite
 
 ## Issues
 
