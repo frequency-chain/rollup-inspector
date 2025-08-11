@@ -15,8 +15,10 @@ export interface ParachainBlockUpdate {
 	blockHash: string;
 	relayIncludedAtNumber?: number;
 	relayIncludedAtHash?: string;
+	relayIncludedAtTimestamp?: number;
 	relayBackedAtNumber?: number;
 	relayBackedAtHash?: string;
+	relayBackedAtTimestamp?: number;
 }
 
 /**
@@ -102,7 +104,8 @@ function normalizeParaId(paraId: any): number {
  */
 export function createParachainBlockUpdates(
 	inclusionInfos: ParachainInclusionInfo[],
-	targetParachainId: number
+	targetParachainId: number,
+	getRelayTimestamp: (hash: string) => number | undefined = () => undefined
 ): Map<string, ParachainBlockUpdate> {
 	const updates = new Map<string, ParachainBlockUpdate>();
 
@@ -117,9 +120,11 @@ export function createParachainBlockUpdates(
 		if (info.eventType === 'included') {
 			existing.relayIncludedAtNumber = info.relayBlockNumber;
 			existing.relayIncludedAtHash = info.relayBlockHash;
+			existing.relayIncludedAtTimestamp = getRelayTimestamp(info.relayBlockHash);
 		} else if (info.eventType === 'backed') {
 			existing.relayBackedAtNumber = info.relayBlockNumber;
 			existing.relayBackedAtHash = info.relayBlockHash;
+			existing.relayBackedAtTimestamp = getRelayTimestamp(info.relayBlockHash);
 		}
 
 		updates.set(blockHash, existing);

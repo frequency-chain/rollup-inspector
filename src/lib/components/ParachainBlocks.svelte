@@ -11,6 +11,7 @@
 	import type { BlockInfo } from 'polkadot-api';
 	import { onMount } from 'svelte';
 	import { getExtrinsicDecoder, type DecodedExtrinsic } from '@polkadot-api/tx-utils';
+	import { extractTimestampFromExtrinsics } from '$lib/utils/timestampExtractor';
 
 	let {
 		parachainClient,
@@ -28,18 +29,23 @@
 		collatorSlot?: number;
 		hash: string;
 		header: BlockHeader;
+		timestamp?: number;
 		relayIncludedAtNumber?: number;
 		relayIncludedAtHash?: string;
+		relayIncludedAtTimestamp?: number;
 		relayBackedAtNumber?: number;
 		relayBackedAtHash?: string;
+		relayBackedAtTimestamp?: number;
 		relayParentHash?: string;
 		relayParentNumber?: number;
+		relayParentTimestamp?: number;
 	};
 
 	let blocksByNumber = new SvelteMap<number, BlockDisplay[]>();
 	let relayNumbersByHash = new SvelteMap<string, number>(); // hash -> block number
 	let relayHashesByNumber = new SvelteMap<number, string>(); // block number -> hash
 	let relayHashesByStateRoot = new SvelteMap<string, string>(); // hash -> State root
+	let relayTimestampsByHash = new SvelteMap<string, number>(); // hash -> timestamp
 	let destroyed = $state<boolean>(false);
 	// let relayChainMetadata = $derived(relayClient.getUnsafeApi().apis.Metadata.metadata());
 	let parachainMetadata = $derived(parachainClient.getUnsafeApi().apis.Metadata.metadata());
@@ -136,6 +142,9 @@
 			// Extract relay parent info from extrinsics (validation data inherent)
 			const { relayParentHash, relayParentNumber } = extractRelayParentFromExtrinsics(extrinsics);
 
+			// Extract timestamp from extrinsics
+			const timestamp = extractTimestampFromExtrinsics(extrinsics);
+
 			const blockDisplay: BlockDisplay = {
 				number: block.number,
 				events,
@@ -144,8 +153,10 @@
 				collatorSlot,
 				hash: block.hash,
 				header,
+				timestamp,
 				relayParentHash,
-				relayParentNumber
+				relayParentNumber,
+				relayParentTimestamp: relayParentHash ? relayTimestampsByHash.get(relayParentHash) : undefined
 			};
 
 			// Only update if component is still mounted
@@ -201,6 +212,32 @@
 				relayHashesByStateRoot.set(header.stateRoot, block.hash);
 			}
 
+			// Extract timestamp from relay block extrinsics
+			try {
+				const relayBlockBodyHex = await relayClient.getBlockBody(block.hash);
+				if (relayBlockBodyHex && Array.isArray(relayBlockBodyHex)) {
+					const relayMetadata = await relayClient.getUnsafeApi().apis.Metadata.metadata();
+					const relayExtrinsicDecoder = getExtrinsicDecoder(relayMetadata.asBytes());
+
+					const relayExtrinsics = relayBlockBodyHex
+						.map((extHex: string) => {
+							try {
+								return relayExtrinsicDecoder(extHex);
+							} catch {
+								return null;
+							}
+						})
+						.filter(x => x !== null);
+
+					const relayTimestamp = extractTimestampFromExtrinsics(relayExtrinsics);
+					if (relayTimestamp) {
+						relayTimestampsByHash.set(block.hash, relayTimestamp);
+					}
+				}
+			} catch (err) {
+				console.debug('Could not extract timestamp from relay block:', block.hash, err);
+			}
+
 			// Cleanup old relay blocks (keep last 1000)
 			if (relayNumbersByHash.size > 1000) {
 				const entries = Array.from(relayNumbersByHash.entries());
@@ -211,6 +248,7 @@
 				relayNumbersByHash.clear();
 				relayHashesByNumber.clear();
 				relayHashesByStateRoot.clear();
+				relayTimestampsByHash.clear();
 
 				// Rebuild maps with kept entries
 				for (const [hash, blockNum] of toKeep) {
@@ -250,7 +288,7 @@
 			}
 
 			// Create block updates for this parachain
-			const updates = createParachainBlockUpdates(inclusionInfos, parachainId);
+			const updates = createParachainBlockUpdates(inclusionInfos, parachainId, (hash) => relayTimestampsByHash.get(hash));
 
 			// Apply updates to existing parachain blocks
 			applyRelayInfoUpdates(updates);
@@ -274,8 +312,10 @@
 								...block,
 								relayIncludedAtNumber: update.relayIncludedAtNumber ?? block.relayIncludedAtNumber,
 								relayIncludedAtHash: update.relayIncludedAtHash ?? block.relayIncludedAtHash,
+								relayIncludedAtTimestamp: update.relayIncludedAtTimestamp ?? block.relayIncludedAtTimestamp,
 								relayBackedAtNumber: update.relayBackedAtNumber ?? block.relayBackedAtNumber,
-								relayBackedAtHash: update.relayBackedAtHash ?? block.relayBackedAtHash
+								relayBackedAtHash: update.relayBackedAtHash ?? block.relayBackedAtHash,
+								relayBackedAtTimestamp: update.relayBackedAtTimestamp ?? block.relayBackedAtTimestamp
 							};
 						}
 						return block;

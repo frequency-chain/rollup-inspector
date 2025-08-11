@@ -3,6 +3,7 @@
 	import type { BlockDisplay } from './ParachainBlocks.svelte';
 	import ExpectedForkDetails from './ExpectedForkDetails.svelte';
 	import BlockRelayInfo from './BlockRelayInfo.svelte';
+	import BlockTimeline from './BlockTimeline.svelte';
 
 	let {
 		blockNumber,
@@ -62,6 +63,9 @@
 		Block #{blockNumber.toLocaleString()}
 		{isFinalized ? '(finalized)' : ''}
 	</h3>
+
+	<!-- Block Timeline -->
+	<BlockTimeline {blocks} />
 
 	<!-- Expected Forks -->
 	{#each expectedForks as forkGroup (forkGroup[0].absoluteSlot)}
