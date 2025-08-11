@@ -79,20 +79,22 @@
 							: formatTimeDifference(getTimeDifferenceInSeconds(event.timestamp, baseTimestamp))}
 					</div>
 					<div class="flex-1">
-						{#if event.type === 'block'}
-							<span class="text-blue-600">📦 Block announced</span>
-							<span class="text-gray-500">#{event.blockNumber}</span>
+						<div>
+							{#if event.type === 'block'}
+								<span class="text-blue-600">📦 Block announced</span>
+								<span class="text-gray-500">#{event.blockNumber}</span>
+							{:else if event.type === 'backed'}
+								<span class="text-green-600">✅ Backed in relay</span>
+								<span class="text-gray-500">#{event.blockNumber}</span>
+							{:else if event.type === 'included'}
+								<span class="text-purple-600">📮 Included in relay</span>
+								<span class="text-gray-500">#{event.blockNumber}</span>
+							{/if}
+						</div>
+						<div class="ml-6">
 							<BlockHash hash={event.hash || ''} size={14} />
-						{:else if event.type === 'backed'}
-							<span class="text-green-600">✅ Backed in relay</span>
-							<span class="text-gray-500">#{event.blockNumber}</span>
-							<BlockHash hash={event.hash || ''} size={14} />
-						{:else if event.type === 'included'}
-							<span class="text-purple-600">📮 Included in relay</span>
-							<span class="text-gray-500">#{event.blockNumber}</span>
-							<BlockHash hash={event.hash || ''} size={14} />
-						{/if}
-						<span class="ml-2 text-gray-400">{timestampToISO(event.timestamp)}</span>
+						</div>
+						<div class="ml-6 text-gray-400">{timestampToISO(event.timestamp)}</div>
 					</div>
 				</div>
 			{/each}
