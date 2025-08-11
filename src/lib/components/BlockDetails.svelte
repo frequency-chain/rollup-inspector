@@ -1,21 +1,7 @@
 <script lang="ts">
-	import type { SystemEvent } from '@polkadot-api/observable-client';
-	import type { BlockHeader } from 'polkadot-api';
 	import { SvelteMap } from 'svelte/reactivity';
-
-	type BlockDisplay = {
-		number: number;
-		events: SystemEvent[];
-		author: string | null;
-		absoluteSlot?: number;
-		collatorSlot?: number;
-		hash: string;
-		header: BlockHeader;
-		relayIncludedAt?: number;
-		relayBackedAt?: number;
-		relayParentHash?: string;
-		relayParentNumber?: number;
-	};
+	import type { BlockDisplay } from './ParachainBlocks.svelte';
+	import ExpectedForkDetails from './ExpectedForkDetails.svelte';
 
 	let {
 		blockNumber,
@@ -78,53 +64,7 @@
 
 	<!-- Expected Forks -->
 	{#each expectedForks as forkGroup (forkGroup[0].absoluteSlot)}
-		<div class="mb-2 text-sm text-blue-600">
-			⚡ Expected fork - {forkGroup.length} blocks from same slot
-		</div>
-		<div class="mb-2 ml-4 border-l-2 border-blue-300 pl-4">
-			<div class="rounded border bg-blue-50 p-2 shadow">
-				<div>Event Count: {forkGroup[0].events.length}</div>
-				<div>Author: {forkGroup[0].author ?? 'Unknown'}</div>
-				{#if forkGroup[0].absoluteSlot !== undefined && forkGroup[0].collatorSlot !== undefined}
-					<div class="text-sm text-purple-600">
-						🎰 Slot: {forkGroup[0].collatorSlot} (Absolute #{forkGroup[0].absoluteSlot})
-					</div>
-				{/if}
-
-				<!-- Fork candidates section -->
-				<div class="mt-2 text-sm text-gray-700">
-					<div class="font-medium">Fork Candidates:</div>
-					{#each forkGroup as block (block.hash)}
-						<div class="mt-1 ml-2 border-t pt-1 text-xs">
-							<div class="text-gray-600">Candidate: {block.hash}</div>
-							{#if block.relayParentHash}
-								<div class="text-green-600">
-									Prior Relay: {block.relayParentHash}
-								</div>
-							{/if}
-						</div>
-					{/each}
-				</div>
-
-				<!-- Relay Chain Inclusion/Backing Information -->
-				{#if forkGroup.some((b) => b.relayIncludedAt !== undefined || b.relayBackedAt !== undefined)}
-					<div class="mt-1 text-sm text-blue-600">
-						{#each forkGroup as block (block.hash)}
-							{#if block.relayIncludedAt !== undefined}
-								<div>
-									📦 {block.hash} included in relay block: #{block.relayIncludedAt}
-								</div>
-							{/if}
-							{#if block.relayBackedAt !== undefined}
-								<div>
-									✅ {block.hash} backed in relay block: #{block.relayBackedAt}
-								</div>
-							{/if}
-						{/each}
-					</div>
-				{/if}
-			</div>
-		</div>
+		<ExpectedForkDetails {forkGroup} />
 	{/each}
 
 	<!-- Unexpected Forks -->
@@ -136,13 +76,10 @@
 
 	{#each unexpectedForks as block (block.hash)}
 		<div class="mb-2 ml-4 border-l-2 border-gray-300 pl-4">
-			{#if unexpectedForks.length > 1}
-				<div class="mb-1 text-xs text-gray-600">
+			<div class="rounded border bg-white p-2 shadow">
+				<div class="mb-1 text-gray-600">
 					Hash: {block.hash}
 				</div>
-			{/if}
-
-			<div class="rounded border bg-white p-2 shadow">
 				<div>Event Count: {block.events.length}</div>
 				<div>Author: {block.author ?? 'Unknown'}</div>
 				{#if block.absoluteSlot !== undefined && block.collatorSlot !== undefined}
@@ -162,18 +99,23 @@
 				{/if}
 
 				<!-- Relay Chain Inclusion/Backing Information -->
-				{#if block.relayIncludedAt !== undefined || block.relayBackedAt !== undefined}
-					<div class="mt-1 text-sm text-blue-600">
-						{#if block.relayIncludedAt !== undefined}
-							<div>📦 Included in relay block: #{block.relayIncludedAt}</div>
+				<!-- Relay Chain Information -->
+				{#if block.relayIncludedAtHash || block.relayBackedAtHash}
+					<div class="mt-1 text-blue-600">
+						{#if block.relayIncludedAtHash}
+							<div>
+								📦 Included in relay block: #{block.relayIncludedAtNumber}
+								{block.relayIncludedAtHash}
+							</div>
 						{/if}
-						{#if block.relayBackedAt !== undefined}
-							<div>✅ Backed in relay block: #{block.relayBackedAt}</div>
+						{#if block.relayBackedAtHash}
+							<div>
+								✅ Backed in relay block: #{block.relayBackedAtNumber}
+								{block.relayBackedAtHash}
+							</div>
 						{/if}
 					</div>
 				{/if}
-
-				<div class="mt-1 text-xs break-all text-gray-500">Hash: {block.hash}</div>
 			</div>
 		</div>
 	{/each}

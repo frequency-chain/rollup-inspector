@@ -20,7 +20,7 @@
 		relayClient: PolkadotClient;
 	} = $props();
 
-	type BlockDisplay = {
+	export type BlockDisplay = {
 		number: number;
 		events: SystemEvent[];
 		author: string | null;
@@ -28,8 +28,10 @@
 		collatorSlot?: number;
 		hash: string;
 		header: BlockHeader;
-		relayIncludedAt?: number;
-		relayBackedAt?: number;
+		relayIncludedAtNumber?: number;
+		relayIncludedAtHash?: string;
+		relayBackedAtNumber?: number;
+		relayBackedAtHash?: string;
 		relayParentHash?: string;
 		relayParentNumber?: number;
 	};
@@ -142,8 +144,6 @@
 				collatorSlot,
 				hash: block.hash,
 				header,
-				relayIncludedAt: undefined, // Will be filled by relay chain events
-				relayBackedAt: undefined, // Will be filled by relay chain events
 				relayParentHash,
 				relayParentNumber
 			};
@@ -161,8 +161,11 @@
 					const existing = existingBlocks[existingIndex];
 					existingBlocks[existingIndex] = {
 						...blockDisplay,
-						relayIncludedAt: existing.relayIncludedAt ?? blockDisplay.relayIncludedAt,
-						relayBackedAt: existing.relayBackedAt ?? blockDisplay.relayBackedAt
+						relayIncludedAtNumber:
+							existing.relayIncludedAtNumber ?? blockDisplay.relayIncludedAtNumber,
+						relayIncludedAtHash: existing.relayIncludedAtHash ?? blockDisplay.relayIncludedAtHash,
+						relayBackedAtNumber: existing.relayBackedAtNumber ?? blockDisplay.relayBackedAtNumber,
+						relayBackedAtHash: existing.relayBackedAtHash ?? blockDisplay.relayBackedAtHash
 					};
 				} else {
 					// Add new block (supports forks - multiple blocks per number)
@@ -257,9 +260,20 @@
 	}
 
 	function applyRelayInfoUpdates(updates: Map<string, ParachainBlockUpdate>) {
+		console.log('=== Applying Relay Updates ===');
+		console.log('Updates received:', Array.from(updates.entries()));
+
 		for (const [blockHash, update] of updates) {
+			console.log(`Trying to match update hash: ${blockHash}`);
+
 			// Find and update matching parachain blocks
 			blocksByNumber.forEach((blocks, blockNumber) => {
+				blocks.forEach((block) => {
+					console.log(
+						`  Block ${block.hash.slice(0, 8)}... parent: ${block.header?.parentHash?.slice(0, 8)}...`
+					);
+				});
+
 				const hasUpdates = blocks.some(
 					(block) => block.hash === blockHash || block.header?.parentHash === blockHash
 				);
@@ -267,11 +281,14 @@
 				if (hasUpdates) {
 					const updatedBlocks = blocks.map((block) => {
 						if (block.hash === blockHash || block.header?.parentHash === blockHash) {
-							return {
+							const updated = {
 								...block,
-								relayIncludedAt: update.relayIncludedAt ?? block.relayIncludedAt,
-								relayBackedAt: update.relayBackedAt ?? block.relayBackedAt
+								relayIncludedAtNumber: update.relayIncludedAtNumber ?? block.relayIncludedAtNumber,
+								relayIncludedAtHash: update.relayIncludedAtHash ?? block.relayIncludedAtHash,
+								relayBackedAtNumber: update.relayBackedAtNumber ?? block.relayBackedAtNumber,
+								relayBackedAtHash: update.relayBackedAtHash ?? block.relayBackedAtHash
 							};
+							return updated;
 						}
 						return block;
 					});
@@ -280,6 +297,7 @@
 				}
 			});
 		}
+		console.log('=== End Relay Updates ===');
 	}
 
 	onMount(() => {

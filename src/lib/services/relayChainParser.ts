@@ -4,16 +4,19 @@ import type { SystemEvent } from '@polkadot-api/observable-client';
 
 export interface ParachainInclusionInfo {
 	paraId: number;
-	blockHash?: string;
+	blockHash: string;
+	relayBlockHash: string;
 	relayBlockNumber: number;
 	eventType: 'included' | 'backed';
-	candidateReceipt?: any;
+	candidateReceipt: any;
 }
 
 export interface ParachainBlockUpdate {
 	blockHash: string;
-	relayIncludedAt?: number;
-	relayBackedAt?: number;
+	relayIncludedAtNumber?: number;
+	relayIncludedAtHash?: string;
+	relayBackedAtNumber?: number;
+	relayBackedAtHash?: string;
 }
 
 /**
@@ -75,7 +78,8 @@ function parseParaInclusionEvent(
 
 	return {
 		paraId: normalizeParaId(paraId),
-		blockHash: candidateReceipt.relay_parent,
+		blockHash: candidateReceipt.para_head.asHex(),
+		relayBlockHash: candidateReceipt.relay_parent.asHex(),
 		relayBlockNumber,
 		eventType: isIncluded ? 'included' : 'backed',
 		candidateReceipt
@@ -111,9 +115,11 @@ export function createParachainBlockUpdates(
 		const existing = updates.get(blockHash) || { blockHash };
 
 		if (info.eventType === 'included') {
-			existing.relayIncludedAt = info.relayBlockNumber;
+			existing.relayIncludedAtNumber = info.relayBlockNumber;
+			existing.relayIncludedAtHash = info.relayBlockHash;
 		} else if (info.eventType === 'backed') {
-			existing.relayBackedAt = info.relayBlockNumber;
+			existing.relayBackedAtNumber = info.relayBlockNumber;
+			existing.relayBackedAtHash = info.relayBlockHash;
 		}
 
 		updates.set(blockHash, existing);
