@@ -26,6 +26,16 @@
 		}
 		return groups;
 	});
+
+	let finalizedTime = $derived(
+		// Cannot be more than one
+		blocks.find((x) => !!x.relayIncludedAtNumber)?.relayIncludedAtTimestamp
+	);
+
+	// Min
+	let firstTime = $derived(Math.min(...blocks.map((x) => x.timestamp || Number.MAX_SAFE_INTEGER)));
+
+	let timeToInclusion = $derived(finalizedTime && firstTime && finalizedTime - firstTime);
 </script>
 
 <div class="mb-6 overflow-hidden rounded-lg border bg-white shadow">
@@ -46,6 +56,12 @@
 				<div>
 					<span class="text-gray-600">Total Candidates:</span>
 					<span class="font-medium">{blocks.length}</span>
+				</div>
+				<div>
+					<span class="text-gray-600">Time to Inclusion:</span>
+					<span class="font-medium"
+						>{timeToInclusion ? Math.round(timeToInclusion / 1_000) + 's' : '...'}</span
+					>
 				</div>
 				{#if slotGroups.size > 1}
 					<div>

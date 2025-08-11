@@ -71,7 +71,7 @@
 	<div class="mb-4 rounded-lg bg-gray-100 p-4 shadow">
 		<div class="space-y-4">
 			{#each timelineEvents as event, index (event.hash + event.type)}
-				<div class="flex items-start gap-3 border-l-2 border-gray-500">
+				<div class="flex items-start gap-3 border-l-2 border-gray-500 pl-2">
 					<div class="text-md w-14 text-right font-mono text-gray-500">
 						{index === 0
 							? '0s'

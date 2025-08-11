@@ -27,25 +27,38 @@
 	let parachainClient: PolkadotClient;
 
 	// RPC endpoint options
-	const polkadotRpcEndpoints = [
-		{ name: 'Blockops', url: 'wss://polkadot-public-rpc.blockops.network/ws' },
-		{ name: 'Allnodes', url: 'wss://polkadot-rpc.publicnode.com' },
-		{ name: 'Stakeworld', url: 'wss://dot-rpc.stakeworld.io' },
-		{ name: 'IBP2', url: 'wss://polkadot.dotters.network' },
-		{ name: 'IBP1', url: 'wss://rpc.ibp.network/polkadot' },
-		{ name: 'Dwellir Tunisia', url: 'wss://polkadot-rpc-tn.dwellir.com' },
-		{ name: 'Dwellir', url: 'wss://polkadot-rpc.dwellir.com' },
-		{ name: 'LuckyFriday', url: 'wss://rpc-polkadot.luckyfriday.io' },
-		{ name: 'RadiumBlock', url: 'wss://polkadot.public.curie.radiumblock.co/ws' },
-		{ name: 'RockX', url: 'wss://rockx-dot.w3node.com/polka-public-dot/ws' },
-		{ name: 'SubQuery', url: 'wss://polkadot.rpc.subquery.network/public/ws' },
-		{ name: 'OnFinality', url: 'wss://polkadot.api.onfinality.io/public-ws' }
+	const relayRpcEndpoints = [
+		{ chain: 'Polkadot', name: 'Blockops', url: 'wss://polkadot-public-rpc.blockops.network/ws' },
+		{ chain: 'Polkadot', name: 'Allnodes', url: 'wss://polkadot-rpc.publicnode.com' },
+		{ chain: 'Polkadot', name: 'Stakeworld', url: 'wss://dot-rpc.stakeworld.io' },
+		{ chain: 'Polkadot', name: 'IBP2', url: 'wss://polkadot.dotters.network' },
+		{ chain: 'Polkadot', name: 'IBP1', url: 'wss://rpc.ibp.network/polkadot' },
+		{ chain: 'Polkadot', name: 'Dwellir Tunisia', url: 'wss://polkadot-rpc-tn.dwellir.com' },
+		{ chain: 'Polkadot', name: 'Dwellir', url: 'wss://polkadot-rpc.dwellir.com' },
+		{ chain: 'Polkadot', name: 'LuckyFriday', url: 'wss://rpc-polkadot.luckyfriday.io' },
+		{
+			chain: 'Polkadot',
+			name: 'RadiumBlock',
+			url: 'wss://polkadot.public.curie.radiumblock.co/ws'
+		},
+		{ chain: 'Polkadot', name: 'RockX', url: 'wss://rockx-dot.w3node.com/polka-public-dot/ws' },
+		{ chain: 'Polkadot', name: 'SubQuery', url: 'wss://polkadot.rpc.subquery.network/public/ws' },
+		{ chain: 'Polkadot', name: 'OnFinality', url: 'wss://polkadot.api.onfinality.io/public-ws' }
 	];
 
-	const frequencyRpcEndpoints = [
-		{ name: 'Frequency 1', url: 'wss://1.rpc.frequency.xyz' },
-		{ name: 'Frequency 0', url: 'wss://0.rpc.frequency.xyz' },
-		{ name: 'OnFinality', url: 'wss://frequency-polkadot.api.onfinality.io/public-ws' }
+	const parachainRpcEndpoints = [
+		{ chain: 'Frequency Mainnet', name: 'Frequency 1', url: 'wss://1.rpc.frequency.xyz' },
+		{ chain: 'Frequency Mainnet', name: 'Frequency 0', url: 'wss://0.rpc.frequency.xyz' },
+		{
+			chain: 'Frequency Mainnet',
+			name: 'OnFinality',
+			url: 'wss://frequency-polkadot.api.onfinality.io/public-ws'
+		},
+		{
+			chain: 'Frequency Testnet Paseo',
+			name: '',
+			url: ''
+		}
 	];
 
 	async function connect() {
@@ -149,10 +162,10 @@
 </script>
 
 <div class="rounded-lg border bg-white shadow-sm">
-	<div class="px-6 py-3 border-b bg-gray-50 rounded-t-lg">
+	<div class="rounded-t-lg border-b bg-gray-50 px-6 py-3">
 		<h2 class="font-semibold text-gray-800">RPC Connection</h2>
 	</div>
-	
+
 	<div class="p-6">
 		<div class="mb-4">
 			<label for="relay-rpc" class="mb-2 block text-sm font-medium text-gray-700">
@@ -167,7 +180,7 @@
 				disabled={connectionState === 'connecting' || connectionState === 'syncing'}
 			/>
 			<datalist id="polkadot-endpoints">
-				{#each polkadotRpcEndpoints as endpoint (endpoint.url)}
+				{#each relayRpcEndpoints as endpoint (endpoint.url)}
 					<option value={endpoint.url}>{endpoint.name} ({endpoint.url})</option>
 				{/each}
 			</datalist>
@@ -186,7 +199,7 @@
 				disabled={connectionState === 'connecting' || connectionState === 'syncing'}
 			/>
 			<datalist id="frequency-endpoints">
-				{#each frequencyRpcEndpoints as endpoint (endpoint.url)}
+				{#each parachainRpcEndpoints as endpoint (endpoint.url)}
 					<option value={endpoint.url}>{endpoint.name} ({endpoint.url})</option>
 				{/each}
 			</datalist>

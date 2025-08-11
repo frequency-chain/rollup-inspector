@@ -13,7 +13,7 @@
 	} = $props();
 </script>
 
-<div class="mb-6 border-l-2 border-gray-500 p-2 pl-4">
+<div class="mb-6 overflow-x-auto border-t-2 border-l-2 border-gray-500 p-2 pl-4">
 	<div class="space-y-2">
 		<div>
 			<BlockHash hash={block.hash} size={32} />
