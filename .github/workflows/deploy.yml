@@ -42,7 +42,7 @@ jobs:
 
       - name: Build
         env:
-          BASE_PATH: ''
+          BASE_PATH: '/rollup-inspector'
         run: |
           npm run build
           touch build/.nojekyll

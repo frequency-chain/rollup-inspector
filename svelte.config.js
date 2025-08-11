@@ -13,7 +13,10 @@ const config = {
 			fallback: '404.html', // dependent on host platform, see GitHub pages doc, maybe?
 			precompress: false,
 			strict: true
-		})
+		}),
+		paths: {
+			base: process.env.BASE_PATH ?? ''
+		}
 	}
 };
 
