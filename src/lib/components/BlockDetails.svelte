@@ -2,6 +2,7 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import type { BlockDisplay } from './ParachainBlocks.svelte';
 	import ExpectedForkDetails from './ExpectedForkDetails.svelte';
+	import BlockRelayInfo from './BlockRelayInfo.svelte';
 
 	let {
 		blockNumber,
@@ -77,45 +78,15 @@
 	{#each unexpectedForks as block (block.hash)}
 		<div class="mb-2 ml-4 border-l-2 border-gray-300 pl-4">
 			<div class="rounded border bg-white p-2 shadow">
-				<div class="mb-1 text-gray-600">
-					Hash: {block.hash}
-				</div>
-				<div>Event Count: {block.events.length}</div>
 				<div>Author: {block.author ?? 'Unknown'}</div>
-				{#if block.absoluteSlot !== undefined && block.collatorSlot !== undefined}
-					<div class="text-sm text-purple-600">
-						🎰 Slot: {block.collatorSlot} (Absolute #{block.absoluteSlot})
-					</div>
-				{/if}
+				<div class="text-purple-600">
+					🎰 Slot: {block.collatorSlot} (Absolute #{block.absoluteSlot})
+				</div>
 
-				<!-- Relay Parent Information -->
-				{#if block.relayParentNumber !== undefined}
-					<div class="mt-1 text-sm text-green-600">
-						<div>🔗 Based on relay block: #{block.relayParentNumber}</div>
-						<div class="text-xs text-gray-500">
-							Relay Block Hash: {block.relayParentHash}
-						</div>
-					</div>
-				{/if}
+				<div class="text-gray-600">Candidate Hash: {block.hash}</div>
+				<div>Event Count: {block.events.length}</div>
 
-				<!-- Relay Chain Inclusion/Backing Information -->
-				<!-- Relay Chain Information -->
-				{#if block.relayIncludedAtHash || block.relayBackedAtHash}
-					<div class="mt-1 text-blue-600">
-						{#if block.relayIncludedAtHash}
-							<div>
-								📦 Included in relay block: #{block.relayIncludedAtNumber}
-								{block.relayIncludedAtHash}
-							</div>
-						{/if}
-						{#if block.relayBackedAtHash}
-							<div>
-								✅ Backed in relay block: #{block.relayBackedAtNumber}
-								{block.relayBackedAtHash}
-							</div>
-						{/if}
-					</div>
-				{/if}
+				<BlockRelayInfo {block} />
 			</div>
 		</div>
 	{/each}
