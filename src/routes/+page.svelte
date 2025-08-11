@@ -20,9 +20,6 @@
 	</div>
 
 	{#if parachainClient && relayClient}
-		<div class="rounded-lg border border-green-200 bg-green-50 p-4 text-center">
-			<p class="text-green-800">Both connections ready!</p>
-		</div>
 		<ParachainBlocks {parachainClient} {relayClient} />
 	{/if}
 </main>

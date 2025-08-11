@@ -91,7 +91,7 @@
 			syncStatus = `Syncing ${chainType} chain...`;
 			// Try to get the latest finalized block hash as a connectivity test
 			const finalizedHash = await client.getFinalizedBlock();
-			console.debug(`${chainType} chain connected, finalized block:`, finalizedHash);
+			console.debug(`${chainType} chain connected, finalized block:`, finalizedHash.hash);
 		} catch (err) {
 			throw new Error(`Failed to sync ${chainType} chain: ${err}`);
 		}
