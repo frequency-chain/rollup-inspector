@@ -260,35 +260,23 @@
 	}
 
 	function applyRelayInfoUpdates(updates: Map<string, ParachainBlockUpdate>) {
-		console.log('=== Applying Relay Updates ===');
-		console.log('Updates received:', Array.from(updates.entries()));
-
 		for (const [blockHash, update] of updates) {
-			console.log(`Trying to match update hash: ${blockHash}`);
-
 			// Find and update matching parachain blocks
 			blocksByNumber.forEach((blocks, blockNumber) => {
-				blocks.forEach((block) => {
-					console.log(
-						`  Block ${block.hash.slice(0, 8)}... parent: ${block.header?.parentHash?.slice(0, 8)}...`
-					);
-				});
-
 				const hasUpdates = blocks.some(
-					(block) => block.hash === blockHash || block.header?.parentHash === blockHash
+					(block) => block.hash === blockHash
 				);
 
 				if (hasUpdates) {
 					const updatedBlocks = blocks.map((block) => {
-						if (block.hash === blockHash || block.header?.parentHash === blockHash) {
-							const updated = {
+						if (block.hash === blockHash) {
+							return {
 								...block,
 								relayIncludedAtNumber: update.relayIncludedAtNumber ?? block.relayIncludedAtNumber,
 								relayIncludedAtHash: update.relayIncludedAtHash ?? block.relayIncludedAtHash,
 								relayBackedAtNumber: update.relayBackedAtNumber ?? block.relayBackedAtNumber,
 								relayBackedAtHash: update.relayBackedAtHash ?? block.relayBackedAtHash
 							};
-							return updated;
 						}
 						return block;
 					});
@@ -297,7 +285,6 @@
 				}
 			});
 		}
-		console.log('=== End Relay Updates ===');
 	}
 
 	onMount(() => {
