@@ -38,6 +38,7 @@ export interface ParachainInclusionInfo {
 	blockHash: string;
 	relayBlockHash: string;
 	relayBlockNumber: number;
+	relayBlockTimestamp?: number;
 	eventType: 'included' | 'backed';
 	candidateReceipt: CandidateReceipt;
 }
@@ -57,7 +58,7 @@ export interface ParachainBlockUpdate {
  */
 export async function parseRelayChainEvents(
 	relayClient: PolkadotClient,
-	relayBlock: { hash: string; number: number }
+	relayBlock: { hash: string; number: number; timestamp?: number }
 ): Promise<ParachainInclusionInfo[]> {
 	try {
 		const events = (await relayClient
@@ -65,7 +66,7 @@ export async function parseRelayChainEvents(
 			.query.System.Events.getValue({ at: relayBlock.hash })) as unknown as SystemEvent[];
 
 		return events
-			.map((event) => parseParaInclusionEvent(event, relayBlock.number, relayBlock.hash))
+			.map((event) => parseParaInclusionEvent(event, relayBlock.number, relayBlock.hash, relayBlock.timestamp))
 			.filter((info): info is ParachainInclusionInfo => info !== null);
 	} catch (error) {
 		console.warn('Failed to parse relay chain events:', error);
@@ -79,7 +80,8 @@ export async function parseRelayChainEvents(
 function parseParaInclusionEvent(
 	eventData: SystemEvent,
 	relayBlockNumber: number,
-	relayBlockHash: string
+	relayBlockHash: string,
+	relayBlockTimestamp?: number
 ): ParachainInclusionInfo | null {
 	if (eventData.event.type !== 'ParaInclusion') {
 		return null;
@@ -100,6 +102,7 @@ function parseParaInclusionEvent(
 		blockHash: descriptor.para_head.asHex(),
 		relayBlockHash,
 		relayBlockNumber,
+		relayBlockTimestamp,
 		eventType: isIncluded ? 'included' : 'backed',
 		candidateReceipt
 	};
@@ -128,8 +131,7 @@ function normalizeParaId(paraId: ParachainIdValue): number {
  */
 export function createParachainBlockUpdates(
 	inclusionInfos: ParachainInclusionInfo[],
-	targetParachainId: number,
-	getRelayTimestamp: (hash: string) => number | undefined = () => undefined
+	targetParachainId: number
 ): Map<string, ParachainBlockUpdate> {
 	const updates = new Map<string, ParachainBlockUpdate>();
 
@@ -144,11 +146,11 @@ export function createParachainBlockUpdates(
 		if (info.eventType === 'included') {
 			existing.relayIncludedAtNumber = info.relayBlockNumber;
 			existing.relayIncludedAtHash = info.relayBlockHash;
-			existing.relayIncludedAtTimestamp = getRelayTimestamp(info.relayBlockHash);
+			existing.relayIncludedAtTimestamp = info.relayBlockTimestamp;
 		} else if (info.eventType === 'backed') {
 			existing.relayBackedAtNumber = info.relayBlockNumber;
 			existing.relayBackedAtHash = info.relayBlockHash;
-			existing.relayBackedAtTimestamp = getRelayTimestamp(info.relayBlockHash);
+			existing.relayBackedAtTimestamp = info.relayBlockTimestamp;
 		}
 
 		updates.set(blockHash, existing);
