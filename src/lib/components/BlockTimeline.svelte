@@ -5,6 +5,7 @@
 		getTimeDifferenceInSeconds,
 		formatTimeDifference
 	} from '$lib/utils/timestampExtractor';
+	import BlockHash from './BlockHash.svelte';
 
 	let {
 		blocks
@@ -81,15 +82,15 @@
 						{#if event.type === 'block'}
 							<span class="text-blue-600">📦 Block announced</span>
 							<span class="text-gray-500">#{event.blockNumber}</span>
-							<span class="text-gray-400">{event.hash}</span>
+							<BlockHash hash={event.hash || ''} size={14} />
 						{:else if event.type === 'backed'}
 							<span class="text-green-600">✅ Backed in relay</span>
 							<span class="text-gray-500">#{event.blockNumber}</span>
-							<span class="text-gray-400">{event.hash}</span>
+							<BlockHash hash={event.hash || ''} size={14} />
 						{:else if event.type === 'included'}
 							<span class="text-purple-600">📮 Included in relay</span>
 							<span class="text-gray-500">#{event.blockNumber}</span>
-							<span class="text-gray-400">{event.hash}</span>
+							<BlockHash hash={event.hash || ''} size={14} />
 						{/if}
 						<span class="ml-2 text-gray-400">{timestampToISO(event.timestamp)}</span>
 					</div>

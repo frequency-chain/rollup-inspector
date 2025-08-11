@@ -1,6 +1,7 @@
 <script lang="ts">
 	import BlockRelayInfo from './BlockRelayInfo.svelte';
 	import type { BlockDisplay } from './ParachainBlocks.svelte';
+	import BlockHash from './BlockHash.svelte';
 
 	let {
 		forkGroup
@@ -21,7 +22,10 @@
 			<div class="font-medium">Expected Fork Candidates:</div>
 			{#each forkGroup as block (block.hash)}
 				<div class="mt-1 ml-2 border-t pt-1 text-sm">
-					<div class="text-gray-600">Candidate Hash: {block.hash}</div>
+					<div class="flex items-center gap-2 text-gray-600">
+						<span>Candidate Hash:</span>
+						<BlockHash hash={block.hash} size={16} />
+					</div>
 					<div>Event Count: {block.events.length}</div>
 
 					<BlockRelayInfo {block} />
