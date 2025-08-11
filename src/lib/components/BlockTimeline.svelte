@@ -68,40 +68,35 @@
 </script>
 
 {#if timelineEvents.length > 0 && baseTimestamp}
-	<div class="mb-4 rounded-lg border bg-white shadow-sm">
-		<div class="rounded-t-lg border-b bg-gray-50 px-6 py-3">
-			<h3 class="font-semibold text-gray-800">Block Timeline</h3>
-		</div>
-		<div class="p-6">
-			<div class="space-y-2">
-				{#each timelineEvents as event, index (event.hash + event.type)}
-					<div class="flex items-start gap-3">
-						<div class="w-14 text-right font-mono text-sm text-gray-500">
-							{index === 0
-								? 'T+0s'
-								: formatTimeDifference(getTimeDifferenceInSeconds(event.timestamp, baseTimestamp))}
+	<div class="mb-4 rounded-lg bg-gray-100 p-4 shadow">
+		<div class="space-y-4">
+			{#each timelineEvents as event, index (event.hash + event.type)}
+				<div class="flex items-start gap-3 border-l-2 border-gray-500">
+					<div class="text-md w-14 text-right font-mono text-gray-500">
+						{index === 0
+							? '0s'
+							: formatTimeDifference(getTimeDifferenceInSeconds(event.timestamp, baseTimestamp))}
+					</div>
+					<div class="flex-1">
+						<div class="text-base">
+							{#if event.type === 'block'}
+								<span class="font-medium text-blue-600">📦 Block announced</span>
+								<span class="text-gray-600">#{event.blockNumber}</span>
+							{:else if event.type === 'backed'}
+								<span class="font-medium text-green-600">✅ Backed in relay</span>
+								<span class="text-gray-600">#{event.blockNumber}</span>
+							{:else if event.type === 'included'}
+								<span class="font-medium text-purple-600">📮 Included in relay</span>
+								<span class="text-gray-600">#{event.blockNumber}</span>
+							{/if}
 						</div>
-						<div class="flex-1">
-							<div class="text-base">
-								{#if event.type === 'block'}
-									<span class="font-medium text-blue-600">📦 Block announced</span>
-									<span class="text-gray-600">#{event.blockNumber}</span>
-								{:else if event.type === 'backed'}
-									<span class="font-medium text-green-600">✅ Backed in relay</span>
-									<span class="text-gray-600">#{event.blockNumber}</span>
-								{:else if event.type === 'included'}
-									<span class="font-medium text-purple-600">📮 Included in relay</span>
-									<span class="text-gray-600">#{event.blockNumber}</span>
-								{/if}
-							</div>
-							<div class="mt-2 ml-2">
-								<BlockHash hash={event.hash || ''} size={32} />
-							</div>
-							<div class="mt-1 ml-2 text-sm text-gray-500">{timestampToISO(event.timestamp)}</div>
+						<div class="mt-1 ml-2 text-sm text-gray-500">{timestampToISO(event.timestamp)}</div>
+						<div class="mt-2 ml-2">
+							<BlockHash hash={event.hash || ''} size={32} />
 						</div>
 					</div>
-				{/each}
-			</div>
+				</div>
+			{/each}
 		</div>
 	</div>
 {/if}
