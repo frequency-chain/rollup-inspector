@@ -2,6 +2,7 @@
 	import Connection, { type onConnections } from '$lib/components/Connection.svelte';
 	import type { PolkadotClient } from 'polkadot-api';
 	import ParachainBlocks from '$lib/components/ParachainBlocks.svelte';
+	import ChainStatus from '$lib/components/ChainStatus.svelte';
 
 	let parachainClient = $state.raw<PolkadotClient | null>(null);
 	let relayClient = $state.raw<PolkadotClient | null>(null);
@@ -20,6 +21,7 @@
 	</div>
 
 	{#if parachainClient && relayClient}
+		<ChainStatus {parachainClient} {relayClient} />
 		<ParachainBlocks {parachainClient} {relayClient} />
 	{/if}
 </main>

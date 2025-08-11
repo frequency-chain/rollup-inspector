@@ -284,6 +284,8 @@
 
 	// Derived value for sorted block numbers
 	let sortedBlockNumbers = $derived(Array.from(blocksByNumber.keys()).sort((a, b) => b - a));
+
+
 </script>
 
 {#if !parachainClient}
