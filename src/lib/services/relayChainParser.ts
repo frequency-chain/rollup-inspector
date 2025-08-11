@@ -1,14 +1,45 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { PolkadotClient } from 'polkadot-api';
 import type { SystemEvent } from '@polkadot-api/observable-client';
 
+/**
+ * Represents a parachain ID that can be in various formats
+ */
+export type ParachainIdValue = number | { value?: number; toNumber?: () => number } | string;
+
+/**
+ * Represents a hash that can be in various formats from Polkadot-API
+ */
+export interface PolkadotHash {
+	asHex(): string;
+	toString(): string;
+}
+
+/**
+ * Candidate receipt descriptor from ParaInclusion events
+ */
+export interface CandidateDescriptor {
+	para_id: ParachainIdValue;
+	para_head: PolkadotHash;
+	relay_parent: PolkadotHash;
+}
+
+/**
+ * Candidate receipt from ParaInclusion events
+ */
+export interface CandidateReceipt {
+	descriptor: CandidateDescriptor;
+}
+
+/**
+ * Information about parachain inclusion/backing events
+ */
 export interface ParachainInclusionInfo {
 	paraId: number;
 	blockHash: string;
 	relayBlockHash: string;
 	relayBlockNumber: number;
 	eventType: 'included' | 'backed';
-	candidateReceipt: any;
+	candidateReceipt: CandidateReceipt;
 }
 
 export interface ParachainBlockUpdate {
@@ -59,13 +90,14 @@ function parseParaInclusionEvent(
 
 	if (!isIncluded && !isBacked) return null;
 
-	const candidateReceipt = eventData.event.value.value[0].descriptor;
-	const paraId = candidateReceipt.para_id;
+	const candidateReceipt = eventData.event.value.value[0] as CandidateReceipt;
+	const descriptor = candidateReceipt.descriptor;
+	const paraId = descriptor.para_id;
 	if (!paraId) return null;
 
 	return {
 		paraId: normalizeParaId(paraId),
-		blockHash: candidateReceipt.para_head.asHex(),
+		blockHash: descriptor.para_head.asHex(),
 		relayBlockHash,
 		relayBlockNumber,
 		eventType: isIncluded ? 'included' : 'backed',
@@ -76,12 +108,19 @@ function parseParaInclusionEvent(
 /**
  * Normalize paraId to a number regardless of input format
  */
-function normalizeParaId(paraId: any): number {
+function normalizeParaId(paraId: ParachainIdValue): number {
 	if (typeof paraId === 'number') return paraId;
+	if (typeof paraId === 'string') return parseInt(paraId, 10);
 	if (typeof paraId === 'object' && paraId !== null) {
-		return paraId.value || paraId.toNumber?.() || parseInt(paraId.toString());
+		if ('value' in paraId && typeof paraId.value === 'number') {
+			return paraId.value;
+		}
+		if ('toNumber' in paraId && typeof paraId.toNumber === 'function') {
+			return paraId.toNumber();
+		}
+		return parseInt(paraId.toString(), 10);
 	}
-	return parseInt(paraId);
+	throw new Error(`Unable to normalize parachain ID: ${paraId}`);
 }
 
 /**

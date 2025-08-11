@@ -65,7 +65,7 @@
 			// Try to get parachain ID from ParachainInfo pallet
 			const id = await parachainClient.getUnsafeApi().query.ParachainInfo.ParachainId.getValue();
 			parachainId = Number(id);
-			console.log('Parachain ID:', parachainId);
+			console.info('Parachain ID:', parachainId);
 		} catch (error) {
 			console.warn('Could not fetch parachain ID from chain state:', error);
 			// You could set a default or ask user to input manually
@@ -92,7 +92,7 @@
 				)
 			};
 		} catch (error) {
-			console.debug('Could not extract relay parent from extrinsics:', error);
+			console.warn('Could not extract relay parent from extrinsics:', error);
 			return {};
 		}
 	}
@@ -121,14 +121,14 @@
 							try {
 								return extrinsicDecoder(extHex);
 							} catch (decodeErr) {
-								console.debug(`Failed to decode extrinsic ${index}:`, decodeErr);
+								console.warn(`Failed to decode extrinsic ${index}:`, decodeErr);
 								return null;
 							}
 						})
 						.filter((x) => x !== null);
 				}
 			} catch (err) {
-				console.debug('Could not get block body:', err);
+				console.warn('Could not get block body:', err);
 			}
 
 			// Extract author from the header digest
@@ -235,7 +235,7 @@
 					}
 				}
 			} catch (err) {
-				console.debug('Could not extract timestamp from relay block:', block.hash, err);
+				console.warn('Could not extract timestamp from relay block:', block.hash, err);
 			}
 
 			// Cleanup old relay blocks (keep last 1000)
@@ -262,7 +262,7 @@
 							relayHashesByStateRoot.set(keptHeader.stateRoot, hash);
 						}
 					} catch (err) {
-						console.debug('Could not get header for kept relay block:', hash, err);
+						console.warn('Could not get header for kept relay block:', hash, err);
 					}
 				}
 			}
