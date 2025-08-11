@@ -1,0 +1,675 @@
+[
+	{
+		"id": "polkadot",
+		"display": "Polkadot Relay Chain",
+		"hasChainSpecs": true,
+		"rpcs": {
+			"Allnodes": "wss://polkadot-rpc.publicnode.com",
+			"Blockops": "wss://polkadot-public-rpc.blockops.network/ws",
+			"Dwellir": "wss://polkadot-rpc.dwellir.com",
+			"Dwellir Tunisia": "wss://polkadot-rpc-tn.dwellir.com",
+			"IBP1": "wss://rpc.ibp.network/polkadot",
+			"IBP2": "wss://polkadot.dotters.network",
+			"LuckyFriday": "wss://rpc-polkadot.luckyfriday.io",
+			"OnFinality": "wss://polkadot.api.onfinality.io/public-ws",
+			"RadiumBlock": "wss://polkadot.public.curie.radiumblock.co/ws",
+			"RockX": "wss://rockx-dot.w3node.com/polka-public-dot/ws",
+			"Stakeworld": "wss://dot-rpc.stakeworld.io",
+			"SubQuery": "wss://polkadot.rpc.subquery.network/public/ws"
+		},
+		"nativeToken": {
+			"symbol": "DOT",
+			"decimals": 10
+		}
+	},
+	{
+		"id": "polkadot_asset_hub",
+		"display": "AssetHub",
+		"rpcs": {
+			"Dwellir": "wss://asset-hub-polkadot-rpc.dwellir.com",
+			"Dwellir Tunisia": "wss://statemint-rpc-tn.dwellir.com",
+			"IBP1": "wss://sys.ibp.network/asset-hub-polkadot",
+			"IBP2": "wss://asset-hub-polkadot.dotters.network",
+			"LuckyFriday": "wss://rpc-asset-hub-polkadot.luckyfriday.io",
+			"OnFinality": "wss://statemint.api.onfinality.io/public-ws",
+			"Parity": "wss://polkadot-asset-hub-rpc.polkadot.io",
+			"RadiumBlock": "wss://statemint.public.curie.radiumblock.co/ws",
+			"Stakeworld": "wss://dot-rpc.stakeworld.io/assethub"
+		},
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": true,
+			"parachain": 1000
+		},
+		"nativeToken": {
+			"symbol": "DOT",
+			"decimals": 10
+		},
+		"hasChainSpecs": true
+	},
+	{
+		"id": "polkadot_bridge_hub",
+		"display": "BridgeHub",
+		"rpcs": {
+			"Dwellir": "wss://bridge-hub-polkadot-rpc.dwellir.com",
+			"Dwellir Tunisia": "wss://polkadot-bridge-hub-rpc-tn.dwellir.com",
+			"IBP1": "wss://sys.ibp.network/bridgehub-polkadot",
+			"IBP2": "wss://bridge-hub-polkadot.dotters.network",
+			"LuckyFriday": "wss://rpc-bridge-hub-polkadot.luckyfriday.io",
+			"OnFinality": "wss://bridgehub-polkadot.api.onfinality.io/public-ws",
+			"Parity": "wss://polkadot-bridge-hub-rpc.polkadot.io",
+			"RadiumBlock": "wss://bridgehub-polkadot.public.curie.radiumblock.co/ws",
+			"Stakeworld": "wss://dot-rpc.stakeworld.io/bridgehub"
+		},
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": true,
+			"parachain": 1002
+		},
+		"nativeToken": {
+			"symbol": "DOT",
+			"decimals": 10
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "polkadot_collectives",
+		"display": "Collectives",
+		"rpcs": {
+			"Dwellir": "wss://collectives-polkadot-rpc.dwellir.com",
+			"Dwellir Tunisia": "wss://polkadot-collectives-rpc-tn.dwellir.com",
+			"IBP1": "wss://sys.ibp.network/collectives-polkadot",
+			"IBP2": "wss://collectives-polkadot.dotters.network",
+			"LuckyFriday": "wss://rpc-collectives-polkadot.luckyfriday.io",
+			"OnFinality": "wss://collectives.api.onfinality.io/public-ws",
+			"Parity": "wss://polkadot-collectives-rpc.polkadot.io",
+			"RadiumBlock": "wss://collectives.public.curie.radiumblock.co/ws",
+			"Stakeworld": "wss://dot-rpc.stakeworld.io/collectives"
+		},
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": true,
+			"parachain": 1001
+		},
+		"nativeToken": {
+			"symbol": "DOT",
+			"decimals": 10
+		},
+		"hasChainSpecs": true
+	},
+	{
+		"id": "polkadot_coretime",
+		"display": "Coretime",
+		"rpcs": {
+			"IBP2": "wss://coretime-polkadot.dotters.network",
+			"Parity": "wss://polkadot-coretime-rpc.polkadot.io"
+		},
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": true,
+			"parachain": 1005
+		},
+		"nativeToken": {
+			"symbol": "DOT",
+			"decimals": 10
+		},
+		"hasChainSpecs": true
+	},
+	{
+		"id": "polkadot_people",
+		"display": "People",
+		"rpcs": {
+			"IBP1": "wss://sys.ibp.network/people-polkadot",
+			"IBP2": "wss://people-polkadot.dotters.network",
+			"LuckyFriday": "wss://rpc-people-polkadot.luckyfriday.io",
+			"Parity": "wss://polkadot-people-rpc.polkadot.io",
+			"RadiumBlock": "wss://people-polkadot.public.curie.radiumblock.co/ws"
+		},
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": true,
+			"parachain": 1004
+		},
+		"nativeToken": {
+			"symbol": "DOT",
+			"decimals": 10
+		},
+		"hasChainSpecs": true
+	},
+	{
+		"id": "acala",
+		"display": "Acala",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2000
+		},
+		"rpcs": {
+			"Dwellir": "wss://acala-rpc.dwellir.com",
+			"OnFinality": "wss://acala-polkadot.api.onfinality.io/public-ws"
+		},
+		"nativeToken": {
+			"symbol": "ACA",
+			"decimals": 12
+		},
+		"hasChainSpecs": true
+	},
+	{
+		"id": "ajuna",
+		"display": "Ajuna Network",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2051
+		},
+		"rpcs": {
+			"AjunaNetwork": "wss://rpc-para.ajuna.network",
+			"IBP1": "wss://ajuna.ibp.network",
+			"IBP2": "wss://ajuna.dotters.network",
+			"OnFinality": "wss://ajuna.api.onfinality.io/public-ws",
+			"RadiumBlock": "wss://ajuna.public.curie.radiumblock.co/ws"
+		},
+		"nativeToken": {
+			"symbol": "AJUN",
+			"decimals": 12
+		},
+		"hasChainSpecs": true
+	},
+	{
+		"id": "astar",
+		"display": "Astar",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2006
+		},
+		"rpcs": {
+			"Astar": "wss://rpc.astar.network",
+			"Automata 1RPC": "wss://1rpc.io/astr",
+			"Dwellir": "wss://astar-rpc.dwellir.com",
+			"OnFinality": "wss://astar.api.onfinality.io/public-ws",
+			"RadiumBlock": "wss://astar.public.curie.radiumblock.co/ws"
+		},
+		"nativeToken": {
+			"symbol": "ASTR",
+			"decimals": 18
+		},
+		"hasChainSpecs": true
+	},
+	{
+		"id": "aventus",
+		"display": "Aventus",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2056
+		},
+		"rpcs": {
+			"Aventus": "wss://public-rpc.mainnet.aventus.network"
+		},
+		"nativeToken": {
+			"symbol": "AVT",
+			"decimals": 18
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "bifrost",
+		"display": "Bifrost",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2030
+		},
+		"rpcs": {
+			"Dwellir": "wss://bifrost-polkadot-rpc.dwellir.com",
+			"IBP1": "wss://bifrost-polkadot.ibp.network",
+			"IBP2": "wss://bifrost-polkadot.dotters.network",
+			"Liebi": "wss://hk.p.bifrost-rpc.liebi.com/ws",
+			"LiebiEU": "wss://eu.bifrost-polkadot-rpc.liebi.com/ws",
+			"RadiumBlock": "wss://bifrost.public.curie.radiumblock.co/ws"
+		},
+		"nativeToken": {
+			"symbol": "BNC",
+			"decimals": 12
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "bitgreen",
+		"display": "Bitgreen",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2048
+		},
+		"rpcs": {
+			"Bitgreen": "wss://mainnet.bitgreen.org"
+		},
+		"nativeToken": {
+			"symbol": "BBB",
+			"decimals": 18
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "centrifuge",
+		"display": "Centrifuge",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2031
+		},
+		"rpcs": {
+			"Centrifuge": "wss://fullnode.centrifuge.io",
+			"Dwellir": "wss://centrifuge-rpc.dwellir.com",
+			"LuckyFriday": "wss://rpc-centrifuge.luckyfriday.io",
+			"OnFinality": "wss://centrifuge-parachain.api.onfinality.io/public-ws"
+		},
+		"nativeToken": {
+			"symbol": "CFG",
+			"decimals": 18
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "crustParachain",
+		"display": "Crust",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2008
+		},
+		"rpcs": {
+			"Crust": "wss://crust-parachain.crustapps.net",
+			"Crust APP": "wss://crust-parachain.crustnetwork.app",
+			"Crust CC": "wss://crust-parachain.crustnetwork.cc",
+			"Crust XYZ": "wss://crust-parachain.crustnetwork.xyz"
+		},
+		"nativeToken": {
+			"symbol": "CRU",
+			"decimals": 12
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "darwinia",
+		"display": "Darwinia",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2046
+		},
+		"rpcs": {
+			"Darwinia": "wss://rpc.darwinia.network",
+			"Dcdao": "wss://darwinia-rpc.dcdao.box",
+			"Dwellir": "wss://darwinia-rpc.dwellir.com"
+		},
+		"nativeToken": {
+			"symbol": "RING",
+			"decimals": 18
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "frequency",
+		"display": "Frequency",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2091
+		},
+		"rpcs": {
+			"Frequency 0": "wss://0.rpc.frequency.xyz",
+			"Frequency 1": "wss://1.rpc.frequency.xyz",
+			"OnFinality": "wss://frequency-polkadot.api.onfinality.io/public-ws"
+		},
+		"nativeToken": {
+			"symbol": "FRQCY",
+			"decimals": 8
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "hydradx",
+		"display": "Hydration",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2034
+		},
+		"rpcs": {
+			"Dwellir": "wss://hydradx-rpc.dwellir.com",
+			"Galactic Council": "wss://rpc.hydradx.cloud",
+			"Helikon": "wss://rpc.helikon.io/hydradx",
+			"IBP1": "wss://hydradx.paras.ibp.network",
+			"IBP2": "wss://hydration.dotters.network"
+		},
+		"nativeToken": {
+			"symbol": "HDX",
+			"decimals": 12
+		},
+		"hasChainSpecs": true
+	},
+	{
+		"id": "hyperbridge",
+		"display": "Hyperbridge (Nexus)",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 3367
+		},
+		"rpcs": {
+			"BlockOps": "wss://hyperbridge-nexus-rpc.blockops.network",
+			"IBP1": "wss://nexus.ibp.network",
+			"IBP2": "wss://nexus.dotters.network"
+		},
+		"nativeToken": {
+			"symbol": "BRIDGE",
+			"decimals": 12
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "integritee",
+		"display": "Integritee Network",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 3359
+		},
+		"rpcs": {
+			"Dwellir": "wss://integritee-rpc.dwellir.com",
+			"Integritee": "wss://polkadot.api.integritee.network"
+		},
+		"nativeToken": {
+			"symbol": "TEER",
+			"decimals": 12
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "invarch",
+		"display": "Invarch Network",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 3340
+		},
+		"rpcs": {
+			"Dwellir": "wss://invarch-rpc.dwellir.com"
+		},
+		"nativeToken": {
+			"symbol": "VARCH",
+			"decimals": 12
+		},
+		"hasChainSpecs": true
+	},
+	{
+		"id": "kilt",
+		"display": "KILT Spiritnet",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2086
+		},
+		"rpcs": {
+			"BOTLabs": "wss://spiritnet.kilt.io/",
+			"Dwellir": "wss://kilt-rpc.dwellir.com",
+			"IBP1": "wss://kilt.ibp.network",
+			"IBP2": "wss://kilt.dotters.network"
+		},
+		"nativeToken": {
+			"symbol": "KILT",
+			"decimals": 15
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "laos",
+		"display": "Laos",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 3370
+		},
+		"rpcs": {
+			"Dwellir": "wss://laos-rpc.dwellir.com",
+			"freeverse.io": "wss://rpc.laos.laosfoundation.io"
+		},
+		"nativeToken": {
+			"symbol": "LAOS",
+			"decimals": 18
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "litentry",
+		"display": "Litentry",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2013
+		},
+		"rpcs": {
+			"Dwellir": "wss://litentry-rpc.dwellir.com",
+			"Litentry": "wss://rpc.litentry-parachain.litentry.io"
+		},
+		"nativeToken": {
+			"symbol": "LIT",
+			"decimals": 18
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "logion",
+		"display": "Logion",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 3354
+		},
+		"rpcs": {
+			"Logion 1": "wss://para-rpc01.logion.network"
+		},
+		"nativeToken": {
+			"symbol": "LGNT",
+			"decimals": 18
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "manta",
+		"display": "Manta",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2104
+		},
+		"rpcs": {
+			"Manta Network": "wss://ws.manta.systems"
+		},
+		"nativeToken": {
+			"symbol": "MANTA",
+			"decimals": 18
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "moonbeam",
+		"display": "Moonbeam",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2004
+		},
+		"rpcs": {
+			"Dwellir": "wss://moonbeam-rpc.dwellir.com",
+			"IBP1": "wss://moonbeam.ibp.network",
+			"IBP2": "wss://moonbeam.dotters.network",
+			"Moonbeam Foundation": "wss://wss.api.moonbeam.network",
+			"OnFinality": "wss://moonbeam.api.onfinality.io/public-ws",
+			"RadiumBlock": "wss://moonbeam.public.curie.radiumblock.co/ws",
+			"UnitedBloc": "wss://moonbeam.unitedbloc.com",
+			"Allnodes": "wss://moonbeam-rpc.publicnode.com"
+		},
+		"nativeToken": {
+			"symbol": "GLMR",
+			"decimals": 18
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "mythos",
+		"display": "Mythos",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 3369
+		},
+		"rpcs": {
+			"parity": "wss://polkadot-mythos-rpc.polkadot.io"
+		},
+		"nativeToken": {
+			"symbol": "MYTH",
+			"decimals": 18
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "neuroweb",
+		"display": "NeuroWeb",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2043
+		},
+		"rpcs": {
+			"Dwellir": "wss://neuroweb-rpc.dwellir.com",
+			"TraceLabs": "wss://parachain-rpc.origin-trail.network"
+		},
+		"nativeToken": {
+			"symbol": "NEURO",
+			"decimals": 12
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "nodle",
+		"display": "Nodle",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2026
+		},
+		"rpcs": {
+			"Dwellir": "wss://nodle-rpc.dwellir.com",
+			"OnFinality": "wss://nodle-parachain.api.onfinality.io/public-ws"
+		},
+		"nativeToken": {
+			"symbol": "NODL",
+			"decimals": 11
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "pendulum",
+		"display": "Pendulum",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2094
+		},
+		"rpcs": {
+			"PendulumChain": "wss://rpc-pendulum.prd.pendulumchain.tech"
+		},
+		"nativeToken": {
+			"symbol": "PEN",
+			"decimals": 12
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "phala",
+		"display": "Phala Network",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2035
+		},
+		"rpcs": {
+			"Dwellir": "wss://phala-rpc.dwellir.com",
+			"Helikon": "wss://rpc.helikon.io/phala",
+			"OnFinality": "wss://phala.api.onfinality.io/public-ws",
+			"Phala": "wss://api.phala.network/ws",
+			"RadiumBlock": "wss://phala.public.curie.radiumblock.co/ws"
+		},
+		"nativeToken": {
+			"symbol": "PHA",
+			"decimals": 12
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "polimec",
+		"display": "Polimec",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 3344
+		},
+		"rpcs": {
+			"Amforc": "wss://polimec.rpc.amforc.com",
+			"Helikon": "wss://rpc.helikon.io/polimec",
+			"IBP1": "wss://polimec.ibp.network",
+			"IBP2": "wss://polimec.dotters.network",
+			"Polimec Foundation": "wss://rpc.polimec.org"
+		},
+		"nativeToken": {
+			"symbol": "PLMC",
+			"decimals": 10
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "unique",
+		"display": "Unique Network",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2037
+		},
+		"rpcs": {
+			"Dwellir": "wss://unique-rpc.dwellir.com",
+			"Geo Load Balancer": "wss://ws.unique.network",
+			"IBP1": "wss://unique.ibp.network",
+			"IBP2": "wss://unique.dotters.network",
+			"Unique America": "wss://us-ws.unique.network",
+			"Unique Asia": "wss://asia-ws.unique.network",
+			"Unique Europe": "wss://eu-ws.unique.network"
+		},
+		"nativeToken": {
+			"symbol": "UNQ",
+			"decimals": 18
+		},
+		"hasChainSpecs": false
+	},
+	{
+		"id": "zeitgeist",
+		"display": "Zeitgeist",
+		"relayChainInfo": {
+			"id": "polkadot",
+			"isSystem": false,
+			"parachain": 2092
+		},
+		"rpcs": {
+			"OnFinality": "wss://zeitgeist.api.onfinality.io/public-ws",
+			"ZeitgeistPM": "wss://main.rpc.zeitgeist.pm/ws"
+		},
+		"nativeToken": {
+			"symbol": "ZTG",
+			"decimals": 10
+		},
+		"hasChainSpecs": false
+	}
+]

@@ -2,6 +2,12 @@
 	import { createClient, type PolkadotClient } from 'polkadot-api';
 	import { getWsProvider } from 'polkadot-api/ws-provider/web';
 	import { onDestroy } from 'svelte';
+	
+	// Import chain data
+	import polkadotChains from '$lib/assets/polkadot.json';
+	import kusamaChains from '$lib/assets/kusama.json';
+	import westendChains from '$lib/assets/westend.json';
+	import paseoChains from '$lib/assets/paseo.json';
 
 	export type onConnections = {
 		parachainClient: PolkadotClient;
@@ -26,40 +32,57 @@
 	let relaychainClient: PolkadotClient;
 	let parachainClient: PolkadotClient;
 
-	// RPC endpoint options
-	const relayRpcEndpoints = [
-		{ chain: 'Polkadot', name: 'Blockops', url: 'wss://polkadot-public-rpc.blockops.network/ws' },
-		{ chain: 'Polkadot', name: 'Allnodes', url: 'wss://polkadot-rpc.publicnode.com' },
-		{ chain: 'Polkadot', name: 'Stakeworld', url: 'wss://dot-rpc.stakeworld.io' },
-		{ chain: 'Polkadot', name: 'IBP2', url: 'wss://polkadot.dotters.network' },
-		{ chain: 'Polkadot', name: 'IBP1', url: 'wss://rpc.ibp.network/polkadot' },
-		{ chain: 'Polkadot', name: 'Dwellir Tunisia', url: 'wss://polkadot-rpc-tn.dwellir.com' },
-		{ chain: 'Polkadot', name: 'Dwellir', url: 'wss://polkadot-rpc.dwellir.com' },
-		{ chain: 'Polkadot', name: 'LuckyFriday', url: 'wss://rpc-polkadot.luckyfriday.io' },
-		{
-			chain: 'Polkadot',
-			name: 'RadiumBlock',
-			url: 'wss://polkadot.public.curie.radiumblock.co/ws'
-		},
-		{ chain: 'Polkadot', name: 'RockX', url: 'wss://rockx-dot.w3node.com/polka-public-dot/ws' },
-		{ chain: 'Polkadot', name: 'SubQuery', url: 'wss://polkadot.rpc.subquery.network/public/ws' },
-		{ chain: 'Polkadot', name: 'OnFinality', url: 'wss://polkadot.api.onfinality.io/public-ws' }
-	];
+	// Combine all chain data
+	const allChains = [...polkadotChains, ...kusamaChains, ...westendChains, ...paseoChains];
 
-	const parachainRpcEndpoints = [
-		{ chain: 'Frequency Mainnet', name: 'Frequency 1', url: 'wss://1.rpc.frequency.xyz' },
-		{ chain: 'Frequency Mainnet', name: 'Frequency 0', url: 'wss://0.rpc.frequency.xyz' },
-		{
-			chain: 'Frequency Mainnet',
-			name: 'OnFinality',
-			url: 'wss://frequency-polkadot.api.onfinality.io/public-ws'
-		},
-		{
-			chain: 'Frequency Testnet Paseo',
-			name: '',
-			url: ''
+	// Get relay chains (chains without relayChainInfo)
+	const relayChains = allChains.filter(chain => !chain.relayChainInfo);
+
+	// Get selected relay chain info
+	let selectedRelayChain = $derived.by(() => {
+		if (!relayRpcUrl) return null;
+		// Find relay chain that has this URL in its rpcs
+		return relayChains.find(chain => 
+			Object.values(chain.rpcs).includes(relayRpcUrl)
+		) || null;
+	});
+
+	// Get parachains for selected relay chain
+	let availableParachains = $derived.by(() => {
+		if (!selectedRelayChain) return [];
+		return allChains.filter(chain => 
+			chain.relayChainInfo && chain.relayChainInfo.id === selectedRelayChain.id
+		);
+	});
+
+	// Generate endpoint options for datalists
+	let relayEndpoints = $derived.by(() => {
+		const endpoints: Array<{chain: string, name: string, url: string}> = [];
+		for (const chain of relayChains) {
+			for (const [name, url] of Object.entries(chain.rpcs)) {
+				endpoints.push({
+					chain: chain.display,
+					name,
+					url
+				});
+			}
 		}
-	];
+		return endpoints;
+	});
+
+	let parachainEndpoints = $derived.by(() => {
+		const endpoints: Array<{chain: string, name: string, url: string}> = [];
+		for (const chain of availableParachains) {
+			for (const [name, url] of Object.entries(chain.rpcs)) {
+				endpoints.push({
+					chain: chain.display,
+					name,
+					url
+				});
+			}
+		}
+		return endpoints;
+	});
 
 	async function connect() {
 		if (!relayRpcUrl || !parachainRpcUrl) {
@@ -173,15 +196,15 @@
 			</label>
 			<input
 				id="relay-rpc"
-				list="polkadot-endpoints"
+				list="relay-endpoints"
 				bind:value={relayRpcUrl}
-				placeholder="wss://polkadot-rpc.publicnode.com"
+				placeholder="Select or enter relay chain RPC URL"
 				class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 				disabled={connectionState === 'connecting' || connectionState === 'syncing'}
 			/>
-			<datalist id="polkadot-endpoints">
-				{#each relayRpcEndpoints as endpoint (endpoint.url)}
-					<option value={endpoint.url}>{endpoint.name} ({endpoint.url})</option>
+			<datalist id="relay-endpoints">
+				{#each relayEndpoints as endpoint (endpoint.url)}
+					<option value={endpoint.url}>{endpoint.chain} - {endpoint.name}</option>
 				{/each}
 			</datalist>
 		</div>
@@ -189,18 +212,21 @@
 		<div class="mb-4">
 			<label for="parachain-rpc" class="mb-2 block text-sm font-medium text-gray-700">
 				Parachain RPC URL
+				{#if selectedRelayChain}
+					<span class="text-xs text-gray-500">({selectedRelayChain.display} parachains)</span>
+				{/if}
 			</label>
 			<input
 				id="parachain-rpc"
-				list="frequency-endpoints"
+				list="parachain-endpoints"
 				bind:value={parachainRpcUrl}
-				placeholder="wss://1.rpc.frequency.xyz"
+				placeholder={selectedRelayChain ? `Select or enter ${selectedRelayChain.display} parachain RPC URL` : "Select relay chain first"}
 				class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 				disabled={connectionState === 'connecting' || connectionState === 'syncing'}
 			/>
-			<datalist id="frequency-endpoints">
-				{#each parachainRpcEndpoints as endpoint (endpoint.url)}
-					<option value={endpoint.url}>{endpoint.name} ({endpoint.url})</option>
+			<datalist id="parachain-endpoints">
+				{#each parachainEndpoints as endpoint (endpoint.url)}
+					<option value={endpoint.url}>{endpoint.chain} - {endpoint.name}</option>
 				{/each}
 			</datalist>
 		</div>

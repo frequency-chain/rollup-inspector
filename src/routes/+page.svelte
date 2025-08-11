@@ -15,22 +15,24 @@
 
 <main class="min-h-screen bg-gray-50 p-4">
 	<div class="mx-auto max-w-none">
-		<h1 class="mb-6 text-center text-2xl font-bold text-gray-800">Parachain Block Inspector</h1>
+		<h1 class="mb-6 text-center text-2xl font-bold text-gray-800">
+			Polkadot Rollup Block Inspector
+		</h1>
 
 		<!-- Connection and Status - 50/50 split on wide screens -->
-		<div class="mb-6 flex flex-col xl:flex-row gap-6">
+		<div class="mb-6 flex flex-col gap-6 xl:flex-row">
 			<!-- Connection Section (Left) -->
 			<div class="xl:w-1/2">
 				<Connection onApiReady={onConnectionReady} />
 			</div>
-			
+
 			<!-- Chain Status Section (Right) -->
 			<div class="xl:w-1/2">
 				{#if parachainClient && relayClient}
 					<ChainStatus {parachainClient} {relayClient} />
 				{:else}
 					<div class="rounded-lg border bg-white shadow-sm">
-						<div class="px-6 py-3 border-b bg-gray-50 rounded-t-lg">
+						<div class="rounded-t-lg border-b bg-gray-50 px-6 py-3">
 							<h2 class="font-semibold text-gray-800">Chain Status</h2>
 						</div>
 						<div class="p-6">

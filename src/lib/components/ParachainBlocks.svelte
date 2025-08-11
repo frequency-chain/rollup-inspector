@@ -136,7 +136,7 @@
 			const relayStateRoot = getRelayStateRootFromExtrinsics(extrinsics);
 
 			// Get full relay block info using state root
-			const relayParentBlock = relayStateRoot 
+			const relayParentBlock = relayStateRoot
 				? getRelayBlockByStateRoot(relayStateRoot)
 				: undefined;
 
@@ -237,9 +237,7 @@
 		for (const [blockHash, update] of updates) {
 			// Find and update matching parachain blocks
 			blocksByNumber.forEach((blocks, blockNumber) => {
-				const hasUpdates = blocks.some(
-					(block) => block.hash === blockHash
-				);
+				const hasUpdates = blocks.some((block) => block.hash === blockHash);
 
 				if (hasUpdates) {
 					const updatedBlocks = blocks.map((block) => {
@@ -248,10 +246,12 @@
 								...block,
 								relayIncludedAtNumber: update.relayIncludedAtNumber ?? block.relayIncludedAtNumber,
 								relayIncludedAtHash: update.relayIncludedAtHash ?? block.relayIncludedAtHash,
-								relayIncludedAtTimestamp: update.relayIncludedAtTimestamp ?? block.relayIncludedAtTimestamp,
+								relayIncludedAtTimestamp:
+									update.relayIncludedAtTimestamp ?? block.relayIncludedAtTimestamp,
 								relayBackedAtNumber: update.relayBackedAtNumber ?? block.relayBackedAtNumber,
 								relayBackedAtHash: update.relayBackedAtHash ?? block.relayBackedAtHash,
-								relayBackedAtTimestamp: update.relayBackedAtTimestamp ?? block.relayBackedAtTimestamp
+								relayBackedAtTimestamp:
+									update.relayBackedAtTimestamp ?? block.relayBackedAtTimestamp
 							};
 						}
 						return block;
@@ -284,12 +284,12 @@
 
 	// Derived value for sorted block numbers
 	let sortedBlockNumbers = $derived(Array.from(blocksByNumber.keys()).sort((a, b) => b - a));
-
-
 </script>
 
 {#if !parachainClient}
 	<div class="text-gray-500">Not connected.</div>
+{:else if sortedBlockNumbers.length === 0}
+	<div class="text-gray-500">Waiting for blocks...</div>
 {:else}
 	{#each sortedBlockNumbers as blockNumber (blockNumber)}
 		<BlockDetails {blockNumber} blocks={blocksByNumber.get(blockNumber) || []} />
