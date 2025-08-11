@@ -1,38 +1,44 @@
-# sv
+# Polkadot Rollup Block Inspector
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A real-time monitoring tool for Polkadot parachain blocks and their relationship to relay chain blocks.
 
-## Creating a project
+**🚀 Live Demo**: https://frequency-chain.github.io/rollup-inspector
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Overview
 
-```sh
-# create a new project in the current directory
-npx sv create
+Monitor parachain block production, backing, and inclusion events across Polkadot, Kusama, Westend, and Paseo. Features real-time chain status, block timelines, fork detection, and detailed block analysis.
 
-# create a new project in my-app
-npx sv create my-app
-```
+## Technology Stack
 
-## Developing
+- **Svelte 5** + SvelteKit + TypeScript
+- **[Polkadot-API (PAPI)](https://papi.how/)** for blockchain connectivity
+- **LokiJS** for in-memory data management
+- **TailwindCSS** for styling
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Development
 
-```sh
+```bash
+npm install
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+## Usage
 
-To create a production version of your app:
+1. Select a relay chain (Polkadot, Kusama, Westend, or Paseo)
+2. Select a parachain from the filtered list
+3. Connect and monitor real-time block events
 
-```sh
-npm run build
-```
+## Scripts
 
-You can preview the production build with `npm run preview`.
+- `npm run dev` - Development server
+- `npm run build` - Production build  
+- `npm run check` - Type checking
+- `npm run lint` - Code linting
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## Issues
+
+Report bugs and feature requests in [GitHub Issues](https://github.com/frequency-chain/rollup-inspector/issues).
+
+## Notes
+
+This project was partially generated using AI assistance.
