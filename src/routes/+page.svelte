@@ -6,10 +6,17 @@
 
 	let parachainClient = $state.raw<PolkadotClient | null>(null);
 	let relayClient = $state.raw<PolkadotClient | null>(null);
+	let connectionKey = $state<number>(0); // Increment this to force component recreation
 
 	function onConnectionReady(connections: onConnections): void {
 		parachainClient = connections.parachainClient;
 		relayClient = connections.relaychainClient;
+		// Increment the key to force component recreation and clear all state
+		connectionKey += 1;
+		console.log(
+			'New connection established, forcing component recreation with key:',
+			connectionKey
+		);
 	}
 </script>
 
@@ -29,7 +36,9 @@
 			<!-- Chain Status Section (Right) -->
 			<div class="xl:w-1/2">
 				{#if parachainClient && relayClient}
-					<ChainStatus {parachainClient} {relayClient} />
+					{#key connectionKey}
+						<ChainStatus {parachainClient} {relayClient} />
+					{/key}
 				{:else}
 					<div class="rounded-lg border bg-white shadow-sm">
 						<div class="rounded-t-lg border-b bg-gray-50 px-6 py-3">
@@ -44,7 +53,9 @@
 		</div>
 
 		{#if parachainClient && relayClient}
-			<ParachainBlocks {parachainClient} {relayClient} />
+			{#key connectionKey}
+				<ParachainBlocks {parachainClient} {relayClient} />
+			{/key}
 		{/if}
 	</div>
 </main>

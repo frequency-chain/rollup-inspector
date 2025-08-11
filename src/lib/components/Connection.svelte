@@ -2,6 +2,7 @@
 	import { createClient, type PolkadotClient } from 'polkadot-api';
 	import { getWsProvider } from 'polkadot-api/ws-provider/web';
 	import { onDestroy } from 'svelte';
+	import { clearAllRelayBlocks } from '$lib/services/relayBlockManager';
 
 	// Import chain data
 	import polkadotChains from '$lib/assets/polkadot.json';
@@ -92,6 +93,10 @@
 			connectionState = 'connecting';
 			error = null;
 			syncStatus = 'Connecting to RPC endpoints...';
+
+			// Clear all previous chain data before connecting to new chains
+			clearAllRelayBlocks();
+			console.log('Cleared previous chain data before new connection');
 
 			// Create clients
 			relaychainClient = createClient(getWsProvider(relayRpcUrl));

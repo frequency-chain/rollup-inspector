@@ -127,6 +127,15 @@ export function getRelayBlockCount(): number {
 }
 
 /**
+ * Clear all relay block data (useful when switching chains)
+ */
+export function clearAllRelayBlocks(): void {
+	const manager = getRelayBlockManager();
+	manager.collection.clear();
+	console.log('Cleared all relay block data');
+}
+
+/**
  * Process a new relay block from the chain and add it to manager
  */
 export async function processAndAddRelayBlock(
