@@ -23,9 +23,9 @@ describe('Chain Assets', () => {
 			expect(parachains.length).toBeGreaterThan(0);
 
 			parachains.forEach((parachain) => {
-				expect(parachain.relayChainInfo.id).toBe('polkadot');
-				expect(typeof parachain.relayChainInfo.parachain).toBe('number');
-				expect(typeof parachain.relayChainInfo.isSystem).toBe('boolean');
+				expect(parachain.relayChainInfo!.id).toBe('polkadot');
+				expect(typeof parachain.relayChainInfo!.parachain).toBe('number');
+				expect(typeof parachain.relayChainInfo!.isSystem).toBe('boolean');
 			});
 		});
 
