@@ -33,7 +33,7 @@
 				});
 			}
 
-			// Add backing events
+			// Add backing events (use relay chain timestamp for timing, parachain hash for identity)
 			if (block.relayBackedAtTimestamp) {
 				events.push({
 					type: 'backed',
@@ -43,7 +43,7 @@
 				});
 			}
 
-			// Add inclusion events
+			// Add inclusion events (use relay chain timestamp for timing, parachain hash for identity)
 			if (block.relayIncludedAtTimestamp) {
 				events.push({
 					type: 'included',
@@ -72,7 +72,7 @@
 		<div class="mb-2 font-medium text-gray-700">Block Timeline</div>
 		<div class="space-y-1 text-sm">
 			{#each timelineEvents as event, index (event.hash + event.type)}
-				<div class="flex items-center gap-2">
+				<div class="flex items-start gap-2">
 					<div class="w-12 text-right text-gray-500">
 						{index === 0
 							? 'T+0s'

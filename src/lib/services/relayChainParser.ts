@@ -34,7 +34,7 @@ export async function parseRelayChainEvents(
 			.query.System.Events.getValue({ at: relayBlock.hash })) as unknown as SystemEvent[];
 
 		return events
-			.map((event) => processRelayChainEvent(event, relayBlock.number))
+			.map((event) => parseParaInclusionEvent(event, relayBlock.number, relayBlock.hash))
 			.filter((info): info is ParachainInclusionInfo => info !== null);
 	} catch (error) {
 		console.warn('Failed to parse relay chain events:', error);
@@ -43,27 +43,12 @@ export async function parseRelayChainEvents(
 }
 
 /**
- * Process a single relay chain event to extract parachain information
- */
-export function processRelayChainEvent(
-	event: SystemEvent,
-	relayBlockNumber: number
-): ParachainInclusionInfo | null {
-	try {
-		// Try different parsing strategies
-		return parseParaInclusionEvent(event, relayBlockNumber);
-	} catch (error) {
-		console.debug('Could not parse relay chain event:', event, error);
-		return null;
-	}
-}
-
-/**
  * Parse ParaInclusion pallet events
  */
 function parseParaInclusionEvent(
 	eventData: SystemEvent,
-	relayBlockNumber: number
+	relayBlockNumber: number,
+	relayBlockHash: string
 ): ParachainInclusionInfo | null {
 	if (eventData.event.type !== 'ParaInclusion') {
 		return null;
@@ -81,7 +66,7 @@ function parseParaInclusionEvent(
 	return {
 		paraId: normalizeParaId(paraId),
 		blockHash: candidateReceipt.para_head.asHex(),
-		relayBlockHash: candidateReceipt.relay_parent.asHex(),
+		relayBlockHash,
 		relayBlockNumber,
 		eventType: isIncluded ? 'included' : 'backed',
 		candidateReceipt
