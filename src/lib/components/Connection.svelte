@@ -213,16 +213,9 @@
 	<div class="mb-2">
 		<span class="text-sm text-gray-600">Status:</span>
 		<span class={`ml-1 text-sm font-medium ${getStateColor(connectionState)}`}>
-			{getStateText(connectionState)}
+			{getStateText(connectionState)} | Sync: {syncStatus || 'None'}
 		</span>
 	</div>
-
-	{#if syncStatus}
-		<div class="mb-2">
-			<span class="text-sm text-gray-600">Progress:</span>
-			<span class="ml-1 text-sm text-gray-800">{syncStatus}</span>
-		</div>
-	{/if}
 
 	{#if error}
 		<div class="rounded-md bg-red-50 p-3">
