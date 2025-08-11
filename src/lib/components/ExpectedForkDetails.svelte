@@ -17,8 +17,8 @@
 	</div>
 	
 	{#each forkGroup as block (block.hash)}
-		<div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
-			<div class="space-y-2">
+		<div class="rounded-lg border border-gray-200 bg-gray-50">
+			<div class="p-4 space-y-2">
 				<div>
 					<span class="font-medium text-gray-600">Author:</span>
 					<span class="font-mono break-all">{block.author ?? 'Unknown'}</span>

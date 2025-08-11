@@ -148,78 +148,82 @@
 	}
 </script>
 
-<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-	<h2 class="mb-4 text-xl font-semibold">RPC Connection</h2>
-
-	<div class="mb-4">
-		<label for="relay-rpc" class="mb-2 block text-sm font-medium text-gray-700">
-			Relay Chain RPC URL
-		</label>
-		<input
-			id="relay-rpc"
-			list="polkadot-endpoints"
-			bind:value={relayRpcUrl}
-			placeholder="wss://polkadot-rpc.publicnode.com"
-			class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-			disabled={connectionState === 'connecting' || connectionState === 'syncing'}
-		/>
-		<datalist id="polkadot-endpoints">
-			{#each polkadotRpcEndpoints as endpoint (endpoint.url)}
-				<option value={endpoint.url}>{endpoint.name} ({endpoint.url})</option>
-			{/each}
-		</datalist>
+<div class="rounded-lg border bg-white shadow-sm">
+	<div class="px-6 py-3 border-b bg-gray-50 rounded-t-lg">
+		<h2 class="font-semibold text-gray-800">RPC Connection</h2>
 	</div>
+	
+	<div class="p-6">
+		<div class="mb-4">
+			<label for="relay-rpc" class="mb-2 block text-sm font-medium text-gray-700">
+				Relay Chain RPC URL
+			</label>
+			<input
+				id="relay-rpc"
+				list="polkadot-endpoints"
+				bind:value={relayRpcUrl}
+				placeholder="wss://polkadot-rpc.publicnode.com"
+				class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+				disabled={connectionState === 'connecting' || connectionState === 'syncing'}
+			/>
+			<datalist id="polkadot-endpoints">
+				{#each polkadotRpcEndpoints as endpoint (endpoint.url)}
+					<option value={endpoint.url}>{endpoint.name} ({endpoint.url})</option>
+				{/each}
+			</datalist>
+		</div>
 
-	<div class="mb-4">
-		<label for="parachain-rpc" class="mb-2 block text-sm font-medium text-gray-700">
-			Parachain RPC URL
-		</label>
-		<input
-			id="parachain-rpc"
-			list="frequency-endpoints"
-			bind:value={parachainRpcUrl}
-			placeholder="wss://1.rpc.frequency.xyz"
-			class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-			disabled={connectionState === 'connecting' || connectionState === 'syncing'}
-		/>
-		<datalist id="frequency-endpoints">
-			{#each frequencyRpcEndpoints as endpoint (endpoint.url)}
-				<option value={endpoint.url}>{endpoint.name} ({endpoint.url})</option>
-			{/each}
-		</datalist>
-	</div>
+		<div class="mb-4">
+			<label for="parachain-rpc" class="mb-2 block text-sm font-medium text-gray-700">
+				Parachain RPC URL
+			</label>
+			<input
+				id="parachain-rpc"
+				list="frequency-endpoints"
+				bind:value={parachainRpcUrl}
+				placeholder="wss://1.rpc.frequency.xyz"
+				class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+				disabled={connectionState === 'connecting' || connectionState === 'syncing'}
+			/>
+			<datalist id="frequency-endpoints">
+				{#each frequencyRpcEndpoints as endpoint (endpoint.url)}
+					<option value={endpoint.url}>{endpoint.name} ({endpoint.url})</option>
+				{/each}
+			</datalist>
+		</div>
 
-	<div class="mb-4 flex space-x-4">
-		<button
-			onclick={connect}
-			disabled={connectionState === 'connecting' || connectionState === 'syncing'}
-			class="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-		>
-			{connectionState === 'connecting' || connectionState === 'syncing'
-				? 'Connecting...'
-				: 'Connect'}
-		</button>
-
-		{#if connectionState === 'connected'}
+		<div class="mb-4 flex space-x-4">
 			<button
-				onclick={disconnect}
-				class="rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
+				onclick={connect}
+				disabled={connectionState === 'connecting' || connectionState === 'syncing'}
+				class="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 			>
-				Disconnect
+				{connectionState === 'connecting' || connectionState === 'syncing'
+					? 'Connecting...'
+					: 'Connect'}
 			</button>
+
+			{#if connectionState === 'connected'}
+				<button
+					onclick={disconnect}
+					class="rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
+				>
+					Disconnect
+				</button>
+			{/if}
+		</div>
+
+		<div class="mb-2">
+			<span class="text-sm text-gray-600">Status:</span>
+			<span class={`ml-1 text-sm font-medium ${getStateColor(connectionState)}`}>
+				{getStateText(connectionState)} | Sync: {syncStatus || 'None'}
+			</span>
+		</div>
+
+		{#if error}
+			<div class="rounded-md bg-red-50 p-3">
+				<p class="text-sm text-red-600">{error}</p>
+			</div>
 		{/if}
 	</div>
-
-	<div class="mb-2">
-		<span class="text-sm text-gray-600">Status:</span>
-		<span class={`ml-1 text-sm font-medium ${getStateColor(connectionState)}`}>
-			{getStateText(connectionState)} | Sync: {syncStatus || 'None'}
-		</span>
-	</div>
-
-	{#if error}
-		<div class="rounded-md bg-red-50 p-3">
-			<p class="text-sm text-red-600">{error}</p>
-		</div>
-	{/if}
 </div>

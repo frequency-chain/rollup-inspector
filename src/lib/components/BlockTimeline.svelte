@@ -68,8 +68,11 @@
 </script>
 
 {#if timelineEvents.length > 0 && baseTimestamp}
-	<div class="mb-4 rounded border bg-gray-50 p-4">
-		<div class="mb-3 font-medium text-gray-700 text-base">Block Timeline</div>
+	<div class="mb-4 rounded-lg border bg-white shadow-sm">
+		<div class="px-6 py-3 border-b bg-gray-50 rounded-t-lg">
+			<h3 class="font-semibold text-gray-800">Block Timeline</h3>
+		</div>
+		<div class="p-6">
 		<div class="space-y-2">
 			{#each timelineEvents as event, index (event.hash + event.type)}
 				<div class="flex items-start gap-3">
@@ -98,6 +101,7 @@
 					</div>
 				</div>
 			{/each}
+		</div>
 		</div>
 	</div>
 {/if}

@@ -29,9 +29,13 @@
 				{#if parachainClient && relayClient}
 					<ChainStatus {parachainClient} {relayClient} />
 				{:else}
-					<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-						<h2 class="text-xl font-semibold text-gray-400">Chain Status</h2>
-						<p class="mt-4 text-gray-500">Connect to view chain status</p>
+					<div class="rounded-lg border bg-white shadow-sm">
+						<div class="px-6 py-3 border-b bg-gray-50 rounded-t-lg">
+							<h2 class="font-semibold text-gray-800">Chain Status</h2>
+						</div>
+						<div class="p-6">
+							<p class="text-gray-500">Connect to view chain status</p>
+						</div>
 					</div>
 				{/if}
 			</div>

@@ -71,7 +71,7 @@
 	<!-- Two Column Layout within each block -->
 	<div class="flex flex-col xl:flex-row">
 		<!-- Timeline Column (Left) -->
-		<div class="border-r border-gray-200 bg-gray-50 p-6 xl:w-1/2">
+		<div class="border-r border-gray-200 p-6 xl:w-1/2">
 			<h4 class="mb-4 font-medium text-gray-700">Timeline</h4>
 			<div class="overflow-x-auto">
 				<BlockTimeline {blocks} />
@@ -79,18 +79,18 @@
 
 			<!-- Summary info -->
 			<div class="mt-4 space-y-2 text-sm">
-				<div class="flex justify-between">
+				<div>
 					<span class="text-gray-600">Total Candidates:</span>
 					<span class="font-medium">{blocks.length}</span>
 				</div>
 				{#if expectedForks.length > 0}
-					<div class="flex justify-between">
+					<div>
 						<span class="text-gray-600">Expected Forks:</span>
 						<span class="font-medium text-blue-600">{expectedForks.length}</span>
 					</div>
 				{/if}
 				{#if unexpectedForks.length > 1}
-					<div class="flex justify-between">
+					<div>
 						<span class="text-gray-600">Unexpected Forks:</span>
 						<span class="font-medium text-orange-600">{unexpectedForks.length}</span>
 					</div>
