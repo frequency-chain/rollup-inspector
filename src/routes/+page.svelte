@@ -3,6 +3,7 @@
 	import type { PolkadotClient } from 'polkadot-api';
 	import ParachainBlocks from '$lib/components/ParachainBlocks.svelte';
 	import ChainStatus from '$lib/components/ChainStatus.svelte';
+	import { startRelayBlockManager } from '$lib/services/relayBlockManager';
 
 	let parachainClient = $state.raw<PolkadotClient | null>(null);
 	let relayClient = $state.raw<PolkadotClient | null>(null);
@@ -11,6 +12,10 @@
 	function onConnectionReady(connections: onConnections): void {
 		parachainClient = connections.parachainClient;
 		relayClient = connections.relaychainClient;
+
+		// Start relay block manager
+		startRelayBlockManager(connections.relaychainClient);
+
 		// Increment the key to force component recreation and clear all state
 		connectionKey += 1;
 		console.log(
@@ -54,7 +59,7 @@
 
 		{#if parachainClient && relayClient}
 			{#key connectionKey}
-				<ParachainBlocks {parachainClient} {relayClient} />
+				<ParachainBlocks {parachainClient} />
 			{/key}
 		{/if}
 	</div>

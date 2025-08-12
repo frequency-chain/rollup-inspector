@@ -132,31 +132,24 @@ function normalizeParaId(paraId: ParachainIdValue): number {
  * Create parachain block updates from inclusion information
  */
 export function createParachainBlockUpdates(
-	inclusionInfos: ParachainInclusionInfo[],
-	targetParachainId: number
-): Map<string, ParachainBlockUpdate> {
-	const updates = new Map<string, ParachainBlockUpdate>();
-
-	const relevantInfos = inclusionInfos.filter(
-		(info) => info.paraId === targetParachainId && info.blockHash
-	);
-
-	for (const info of relevantInfos) {
-		const blockHash = info.blockHash!;
-		const existing = updates.get(blockHash) || { blockHash };
-
-		if (info.eventType === 'included') {
-			existing.relayIncludedAtNumber = info.relayBlockNumber;
-			existing.relayIncludedAtHash = info.relayBlockHash;
-			existing.relayIncludedAtTimestamp = info.relayBlockTimestamp;
-		} else if (info.eventType === 'backed') {
-			existing.relayBackedAtNumber = info.relayBlockNumber;
-			existing.relayBackedAtHash = info.relayBlockHash;
-			existing.relayBackedAtTimestamp = info.relayBlockTimestamp;
+	inclusionInfos: ParachainInclusionInfo[]
+): ParachainBlockUpdate[] {
+	return inclusionInfos.map((info) => {
+		switch (info.eventType) {
+			case 'included':
+				return {
+					blockHash: info.blockHash,
+					relayIncludedAtNumber: info.relayBlockNumber,
+					relayIncludedAtHash: info.relayBlockHash,
+					relayIncludedAtTimestamp: info.relayBlockTimestamp
+				};
+			case 'backed':
+				return {
+					blockHash: info.blockHash,
+					relayBackedAtNumber: info.relayBlockNumber,
+					relayBackedAtHash: info.relayBlockHash,
+					relayBackedAtTimestamp: info.relayBlockTimestamp
+				};
 		}
-
-		updates.set(blockHash, existing);
-	}
-
-	return updates;
+	});
 }

@@ -3,27 +3,22 @@
 	import type { SystemEvent } from '@polkadot-api/observable-client';
 	import BlockDetails from './BlockDetails.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
-	import {
-		parseRelayChainEvents,
-		createParachainBlockUpdates,
-		type ParachainBlockUpdate
-	} from '$lib/services/relayChainParser';
 	import type { BlockInfo } from 'polkadot-api';
 	import { onMount } from 'svelte';
 	import { getExtrinsicDecoder, type DecodedExtrinsic } from '@polkadot-api/tx-utils';
 	import { extractTimestampFromExtrinsics } from '$lib/utils/timestampExtractor';
 	import {
-		processAndAddRelayBlock,
 		getRelayBlockByStateRoot,
-		getRelayBlockTimestamp
+		getParachainUpdatesStream,
+		getRelayBlockMappingStream
 	} from '$lib/services/relayBlockManager';
+	import type { ParachainBlockUpdate } from '$lib/services/relayChainParser';
+	import { filter, map } from 'rxjs';
 
 	let {
-		parachainClient,
-		relayClient
+		parachainClient
 	}: {
 		parachainClient: PolkadotClient;
-		relayClient: PolkadotClient;
 	} = $props();
 
 	export type BlockDisplay = {
@@ -44,12 +39,11 @@
 		relayParentHash?: string;
 		relayParentNumber?: number;
 		relayParentTimestamp?: number;
+		relayParentStateRoot?: string; // Store the state root for matching
 	};
 
 	let blocksByNumber = new SvelteMap<number, BlockDisplay[]>();
 	let destroyed = $state<boolean>(false);
-	// let relayChainMetadata = $derived(relayClient.getUnsafeApi().apis.Metadata.metadata());
-	let parachainMetadata = $derived(parachainClient.getUnsafeApi().apis.Metadata.metadata());
 	let parachainCollators = $derived(
 		parachainClient
 			.getUnsafeApi()
@@ -92,37 +86,25 @@
 
 	async function addBlock(block: BlockInfo) {
 		try {
-			// Get block header and events (we'll need to get extrinsics separately)
-			const [header, events] = await Promise.all([
+			// Get block header
+			const [header, blockBody, events, extrinsicDecoder] = await Promise.all([
 				parachainClient.getBlockHeader(block.hash),
+				parachainClient.getBlockBody(block.hash),
 				parachainClient
 					.getUnsafeApi()
-					.query.System.Events.getValue({ at: block.hash }) as unknown as SystemEvent[]
+					.query.System.Events.getValue({ at: block.hash }) as unknown as SystemEvent[],
+				parachainClient
+					.getUnsafeApi()
+					.apis.Metadata.metadata()
+					.then((x) => getExtrinsicDecoder(x.asBytes()))
 			]);
 
-			// Get array of hex-encoded extrinsics and decode them
-			let extrinsics: DecodedExtrinsic[] = [];
-			try {
-				const blockBodyHex = await parachainClient.getBlockBody(block.hash);
+			const extrinsics = blockBody.map(extrinsicDecoder);
 
-				if (blockBodyHex && Array.isArray(blockBodyHex)) {
-					// Get metadata to create extrinsic decoder
-					const extrinsicDecoder = getExtrinsicDecoder((await parachainMetadata).asBytes());
-
-					extrinsics = blockBodyHex
-						.map((extHex: string, index: number) => {
-							try {
-								return extrinsicDecoder(extHex);
-							} catch (decodeErr) {
-								console.warn(`Failed to decode extrinsic ${index}:`, decodeErr);
-								return null;
-							}
-						})
-						.filter((x) => x !== null);
-				}
-			} catch (err) {
-				console.warn('Could not get block body:', err);
-			}
+			// Extract timestamp
+			const timestamp = extractTimestampFromExtrinsics(extrinsics) || undefined;
+			// Extract relay parent state root from extrinsics (validation data inherent)
+			const relayStateRoot = getRelayStateRootFromExtrinsics(extrinsics);
 
 			// Extract author from the header digest
 			const slotHex = (header.digests![0]!.value! as { payload: string }).payload.replace('0x', '');
@@ -132,16 +114,10 @@
 			const authorHex = collators[collatorSlot];
 			const author = authorHex;
 
-			// Extract relay parent state root from extrinsics (validation data inherent)
-			const relayStateRoot = getRelayStateRootFromExtrinsics(extrinsics);
-
-			// Get full relay block info using state root
+			// Get full relay block info using state root in case it already exists
 			const relayParentBlock = relayStateRoot
 				? getRelayBlockByStateRoot(relayStateRoot)
 				: undefined;
-
-			// Extract timestamp from extrinsics
-			const timestamp = extractTimestampFromExtrinsics(extrinsics);
 
 			const blockDisplay: BlockDisplay = {
 				number: block.number,
@@ -154,7 +130,8 @@
 				timestamp,
 				relayParentHash: relayParentBlock?.hash,
 				relayParentNumber: relayParentBlock?.number,
-				relayParentTimestamp: relayParentBlock?.timestamp
+				relayParentTimestamp: relayParentBlock?.timestamp,
+				relayParentStateRoot: relayStateRoot
 			};
 
 			// Only update if component is still mounted
@@ -196,75 +173,60 @@
 		}
 	}
 
-	async function addRelayBlock(block: BlockInfo) {
-		try {
-			await processAndAddRelayBlock(relayClient, block);
-			await updateParachainBlocksWithRelayInfo(block);
-		} catch (error) {
-			console.warn('Error processing relay block:', error);
-		}
-	}
+	function applyRelayInfoUpdate(update: ParachainBlockUpdate) {
+		// Find and update matching parachain block
+		const updateBlocks = blocksByNumber
+			.values()
+			.find((blocks) => blocks.some((block) => block.hash === update.blockHash));
 
-	async function updateParachainBlocksWithRelayInfo(relayBlock: BlockInfo) {
-		try {
-			// Get the relay block with timestamp from the manager
-			const relayBlockWithTimestamp = {
-				hash: relayBlock.hash,
-				number: relayBlock.number,
-				timestamp: getRelayBlockTimestamp(relayBlock.hash)
-			};
-
-			// Parse relay chain events to find parachain inclusions/backings
-			const inclusionInfos = await parseRelayChainEvents(relayClient, relayBlockWithTimestamp);
-
-			// Use the parachain ID from chain state
-			if (!parachainId) {
-				console.warn('Parachain ID not available from chain state');
-				return;
-			}
-
-			// Create block updates for this parachain
-			const updates = createParachainBlockUpdates(inclusionInfos, parachainId);
-
-			// Apply updates to existing parachain blocks
-			applyRelayInfoUpdates(updates);
-		} catch (error) {
-			console.warn('Failed to update parachain blocks with relay info:', error);
-		}
-	}
-
-	function applyRelayInfoUpdates(updates: Map<string, ParachainBlockUpdate>) {
-		for (const [blockHash, update] of updates) {
-			// Find and update matching parachain blocks
-			blocksByNumber.forEach((blocks, blockNumber) => {
-				const hasUpdates = blocks.some((block) => block.hash === blockHash);
-
-				if (hasUpdates) {
-					const updatedBlocks = blocks.map((block) => {
-						if (block.hash === blockHash) {
-							return {
-								...block,
-								relayIncludedAtNumber: update.relayIncludedAtNumber ?? block.relayIncludedAtNumber,
-								relayIncludedAtHash: update.relayIncludedAtHash ?? block.relayIncludedAtHash,
-								relayIncludedAtTimestamp:
-									update.relayIncludedAtTimestamp ?? block.relayIncludedAtTimestamp,
-								relayBackedAtNumber: update.relayBackedAtNumber ?? block.relayBackedAtNumber,
-								relayBackedAtHash: update.relayBackedAtHash ?? block.relayBackedAtHash,
-								relayBackedAtTimestamp:
-									update.relayBackedAtTimestamp ?? block.relayBackedAtTimestamp
-							};
-						}
-						return block;
-					});
-
-					blocksByNumber.set(blockNumber, updatedBlocks);
+		if (updateBlocks) {
+			const updatedBlocks = updateBlocks.map((block) => {
+				if (block.hash === update.blockHash) {
+					return {
+						...block,
+						...update
+					};
 				}
+				return block;
 			});
+
+			blocksByNumber.set(updatedBlocks[0].number, updatedBlocks);
 		}
+	}
+
+	function applyRelayStateRoot(mapping: {
+		stateRoot: string;
+		hash: string;
+		number: number;
+		timestamp?: number;
+	}) {
+		// Find and update matching parachain block
+		blocksByNumber
+			.values()
+			.filter((blocks) =>
+				blocks.some(
+					(block) => !block.relayParentHash && block.relayParentStateRoot === mapping.stateRoot
+				)
+			)
+			.forEach((blocks) => {
+				const updatedBlocks = blocks.map((block) => {
+					if (block.relayParentStateRoot === mapping.stateRoot && !block.relayParentHash) {
+						return {
+							...block,
+							relayParentNumber: mapping.number,
+							relayParentHash: mapping.hash,
+							relayParentTimestamp: mapping.timestamp
+						};
+					}
+					return block;
+				});
+
+				blocksByNumber.set(updatedBlocks[0].number, updatedBlocks);
+			});
 	}
 
 	onMount(() => {
-		if (!parachainClient || !relayClient) {
+		if (!parachainClient) {
 			console.error('NO CLIENT FOUND TO SUBSCRIBE TO BLOCKS!');
 			return;
 		}
@@ -273,12 +235,23 @@
 		fetchParachainId();
 
 		const parachainSub = parachainClient.blocks$.subscribe(addBlock);
-		const relaySub = relayClient.blocks$.subscribe(addRelayBlock);
+
+		// Subscribe to parachain updates, filtering for our parachain ID
+		const updatesSub = getParachainUpdatesStream()
+			.pipe(
+				filter((x) => x.parachainId === parachainId),
+				map((x) => x.update)
+			)
+			.subscribe(applyRelayInfoUpdate);
+
+		// Subscribe to relay block mappings to update relay parent information
+		const mappingSub = getRelayBlockMappingStream().subscribe(applyRelayStateRoot);
 
 		return () => {
 			destroyed = true;
 			parachainSub?.unsubscribe();
-			relaySub?.unsubscribe();
+			updatesSub?.unsubscribe();
+			mappingSub?.unsubscribe();
 		};
 	});
 

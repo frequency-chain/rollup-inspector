@@ -10,7 +10,7 @@
 </script>
 
 <!-- Relay Parent Information -->
-{#if block.relayParentNumber !== undefined}
+{#if block.relayParentNumber}
 	<div class="mt-1 text-red-800">
 		<div>🔗 Based on Relay Block: #{block.relayParentNumber}</div>
 		<div class="ml-7 text-sm text-gray-500">

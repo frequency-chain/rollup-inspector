@@ -1,17 +1,26 @@
 import Loki, { type Collection } from 'lokijs';
 import type { PolkadotClient } from 'polkadot-api';
-import { getExtrinsicDecoder } from '@polkadot-api/tx-utils';
+import { getExtrinsicDecoder, type DecodedExtrinsic } from '@polkadot-api/tx-utils';
 import { extractTimestampFromExtrinsics } from '$lib/utils/timestampExtractor';
+import type { BlockInfo } from 'polkadot-api';
+import { Subject } from 'rxjs';
+import {
+	parseRelayChainEvents,
+	createParachainBlockUpdates,
+	type ParachainBlockUpdate,
+	type ParachainInclusionInfo
+} from './relayChainParser';
 
 /**
  * Relay block document in LokiJS
  */
-export interface RelayBlockDoc {
+export interface RelayBlockDoc extends BlockInfo {
 	hash: string;
 	number: number;
 	stateRoot?: string;
 	timestamp?: number;
 	createdAt: number;
+	extrinsics: DecodedExtrinsic[];
 }
 
 /**
@@ -20,7 +29,26 @@ export interface RelayBlockDoc {
 let relayBlockManager: {
 	readonly db: Loki;
 	readonly collection: Collection<RelayBlockDoc>;
+	relayClient?: PolkadotClient;
 } | null = null;
+
+/**
+ * Subject for streaming parachain block updates for a specific parachain
+ */
+const parachainUpdatesSubject = new Subject<{
+	parachainId: number;
+	update: ParachainBlockUpdate;
+}>();
+
+/**
+ * Subject for streaming relay block state root mappings
+ */
+const relayBlockMappingSubject = new Subject<{
+	stateRoot: string;
+	hash: string;
+	number: number;
+	timestamp?: number;
+}>();
 
 /**
  * Initialize the singleton relay block manager
@@ -51,9 +79,9 @@ function getRelayBlockManager() {
 }
 
 /**
- * Add a relay block to the manager
+ * Add a relay block to the manager (private)
  */
-export function addRelayBlock(block: Omit<RelayBlockDoc, 'createdAt'>): void {
+function addRelayBlock(block: Omit<RelayBlockDoc, 'createdAt'>): void {
 	const manager = getRelayBlockManager();
 
 	// Remove existing block with same hash to avoid duplicates
@@ -139,48 +167,119 @@ export function clearAllRelayBlocks(): void {
  * Process a new relay block from the chain and add it to manager
  */
 export async function processAndAddRelayBlock(
-	client: PolkadotClient,
-	blockInfo: { hash: string; number: number }
+	relayClient: PolkadotClient,
+	blockInfo: BlockInfo
 ): Promise<RelayBlockDoc | null> {
 	try {
 		// Get block header
-		const header = await client.getBlockHeader(blockInfo.hash);
+		const [header, blockBody, extrinsicDecoder] = await Promise.all([
+			relayClient.getBlockHeader(blockInfo.hash),
+			relayClient.getBlockBody(blockInfo.hash),
+			relayClient
+				.getUnsafeApi()
+				.apis.Metadata.metadata()
+				.then((x) => getExtrinsicDecoder(x.asBytes()))
+		]);
+
+		const extrinsics = blockBody.map(extrinsicDecoder);
 
 		// Extract timestamp
-		let timestamp: number | undefined;
-		try {
-			const blockBodyHex = await client.getBlockBody(blockInfo.hash);
-			if (blockBodyHex && Array.isArray(blockBodyHex)) {
-				const metadata = await client.getUnsafeApi().apis.Metadata.metadata();
-				const extrinsicDecoder = getExtrinsicDecoder(metadata.asBytes());
+		const timestamp = extractTimestampFromExtrinsics(extrinsics) || undefined;
 
-				const extrinsics = blockBodyHex
-					.map((extHex: string) => {
-						try {
-							return extrinsicDecoder(extHex);
-						} catch {
-							return null;
-						}
-					})
-					.filter((x) => x !== null);
+		addRelayBlock({
+			...blockInfo,
+			stateRoot: header.stateRoot || undefined,
+			timestamp,
+			extrinsics
+		});
 
-				timestamp = extractTimestampFromExtrinsics(extrinsics) || undefined;
-			}
-		} catch (err) {
-			console.warn('Could not extract timestamp from relay block:', blockInfo.hash, err);
+		// Emit state root mapping for parachain blocks that need relay parent info
+		if (header.stateRoot) {
+			relayBlockMappingSubject.next({
+				stateRoot: header.stateRoot,
+				hash: blockInfo.hash,
+				number: blockInfo.number,
+				timestamp
+			});
 		}
 
-		const blockData: Omit<RelayBlockDoc, 'createdAt'> = {
-			hash: blockInfo.hash,
-			number: blockInfo.number,
-			stateRoot: header.stateRoot || undefined,
-			timestamp
-		};
+		// Process relay block for parachain updates
+		await processRelayBlockForParachainUpdates(relayClient, blockInfo);
 
-		addRelayBlock(blockData);
 		return getRelayBlockByHash(blockInfo.hash);
 	} catch (error) {
 		console.warn('Failed to process relay block:', blockInfo.hash, error);
 		return null;
 	}
+}
+
+/**
+ * Start listening to relay chain blocks
+ */
+export function startRelayBlockManager(relayClient: PolkadotClient): () => void {
+	const manager = getRelayBlockManager();
+	manager.relayClient = relayClient;
+
+	const subscription = relayClient.blocks$.subscribe(async (block) => {
+		try {
+			await processAndAddRelayBlock(relayClient, block);
+		} catch (error) {
+			console.warn('Error processing relay block:', error);
+		}
+	});
+
+	return () => {
+		subscription?.unsubscribe();
+		manager.relayClient = undefined;
+	};
+}
+
+/**
+ * Process relay block for parachain updates
+ */
+async function processRelayBlockForParachainUpdates(
+	relayClient: PolkadotClient,
+	blockInfo: BlockInfo
+) {
+	try {
+		const relayBlockWithTimestamp = {
+			hash: blockInfo.hash,
+			number: blockInfo.number,
+			timestamp: getRelayBlockTimestamp(blockInfo.hash)
+		};
+
+		// Parse relay chain events to find parachain inclusions/backings
+		const inclusionInfos = await parseRelayChainEvents(relayClient, relayBlockWithTimestamp);
+
+		// Group inclusion infos by parachain ID
+		const infosByParachain = new Map<number, ParachainInclusionInfo[]>();
+		for (const info of inclusionInfos) {
+			const existing = infosByParachain.get(info.paraId) || [];
+			existing.push(info);
+			infosByParachain.set(info.paraId, existing);
+		}
+
+		// Create block updates for each parachain found in this relay block
+		for (const [parachainId, infos] of infosByParachain) {
+			createParachainBlockUpdates(infos).forEach((update) =>
+				parachainUpdatesSubject.next({ parachainId, update })
+			);
+		}
+	} catch (error) {
+		console.warn('Failed to process relay block for parachain updates:', error);
+	}
+}
+
+/**
+ * Get the parachain updates stream
+ */
+export function getParachainUpdatesStream() {
+	return parachainUpdatesSubject.asObservable();
+}
+
+/**
+ * Get the relay block mapping stream (state root -> relay block info)
+ */
+export function getRelayBlockMappingStream() {
+	return relayBlockMappingSubject.asObservable();
 }
