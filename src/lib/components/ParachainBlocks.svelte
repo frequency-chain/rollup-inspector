@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { type BlockHeader, type PolkadotClient } from 'polkadot-api';
+	import { type PolkadotClient } from 'polkadot-api';
 	import type { SystemEvent } from '@polkadot-api/observable-client';
 	import BlockDetails from './BlockDetails.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -12,35 +12,19 @@
 		getParachainUpdatesStream,
 		getRelayBlockMappingStream
 	} from '$lib/services/relayBlockManager';
-	import type { ParachainBlockUpdate } from '$lib/services/relayChainParser';
+	import type { ParachainInclusionInfo } from '$lib/services/relayChainParser';
 	import { filter, map } from 'rxjs';
+	import {
+		mergeBlockDisplay,
+		updateBlockDisplay,
+		type BlockDisplay
+	} from '$lib/utils/blockDisplay';
 
 	let {
 		parachainClient
 	}: {
 		parachainClient: PolkadotClient;
 	} = $props();
-
-	export type BlockDisplay = {
-		number: number;
-		events: SystemEvent[];
-		author: string | null;
-		absoluteSlot: number;
-		collatorSlot: number;
-		hash: string;
-		header: BlockHeader;
-		timestamp?: number;
-		relayIncludedAtNumber?: number;
-		relayIncludedAtHash?: string;
-		relayIncludedAtTimestamp?: number;
-		relayBackedAtNumber?: number;
-		relayBackedAtHash?: string;
-		relayBackedAtTimestamp?: number;
-		relayParentHash?: string;
-		relayParentNumber?: number;
-		relayParentTimestamp?: number;
-		relayParentStateRoot?: string;
-	};
 
 	let blocksByNumber = new SvelteMap<number, BlockDisplay[]>();
 	let destroyed = $state<boolean>(false);
@@ -144,15 +128,10 @@
 
 				if (existingIndex >= 0) {
 					// Update existing block (preserve relay chain info if already set)
-					const existing = existingBlocks[existingIndex];
-					existingBlocks[existingIndex] = {
-						...blockDisplay,
-						relayIncludedAtNumber:
-							existing.relayIncludedAtNumber ?? blockDisplay.relayIncludedAtNumber,
-						relayIncludedAtHash: existing.relayIncludedAtHash ?? blockDisplay.relayIncludedAtHash,
-						relayBackedAtNumber: existing.relayBackedAtNumber ?? blockDisplay.relayBackedAtNumber,
-						relayBackedAtHash: existing.relayBackedAtHash ?? blockDisplay.relayBackedAtHash
-					};
+					existingBlocks[existingIndex] = mergeBlockDisplay(
+						blockDisplay,
+						existingBlocks[existingIndex]
+					);
 				} else {
 					// Add new block (supports forks - multiple blocks per number)
 					existingBlocks.push(blockDisplay);
@@ -173,7 +152,7 @@
 		}
 	}
 
-	function applyRelayInfoUpdate(update: ParachainBlockUpdate) {
+	function applyRelayInfoUpdate(update: ParachainInclusionInfo) {
 		// Find and update matching parachain block
 		const updateBlocks = blocksByNumber
 			.values()
@@ -182,10 +161,7 @@
 		if (updateBlocks) {
 			const updatedBlocks = updateBlocks.map((block) => {
 				if (block.hash === update.blockHash) {
-					return {
-						...block,
-						...update
-					};
+					return updateBlockDisplay(block, update);
 				}
 				return block;
 			});

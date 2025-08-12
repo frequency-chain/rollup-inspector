@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { BlockDisplay } from './ParachainBlocks.svelte';
+	import type { BlockDisplay } from '$lib/utils/blockDisplay';
 	import BlockCard from './BlockCard.svelte';
 
 	let {

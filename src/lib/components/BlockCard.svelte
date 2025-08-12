@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { BlockDisplay } from './ParachainBlocks.svelte';
 	import BlockRelayInfo from './BlockRelayInfo.svelte';
 	import BlockHash from './BlockHash.svelte';
 	import { timestampToISO } from '$lib/utils/timestampExtractor';
+	import type { BlockDisplay } from '$lib/utils/blockDisplay';
 
 	let {
 		block,

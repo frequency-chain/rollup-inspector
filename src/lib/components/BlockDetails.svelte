@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { SvelteMap } from 'svelte/reactivity';
-	import type { BlockDisplay } from './ParachainBlocks.svelte';
 	import BlockSlot from './BlockSlot.svelte';
 	import BlockTimeline from './BlockTimeline.svelte';
+	import type { BlockDisplay } from '$lib/utils/blockDisplay';
 
 	let {
 		blockNumber,

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { BlockDisplay } from './ParachainBlocks.svelte';
+	import type { BlockDisplay } from '$lib/utils/blockDisplay';
 	import { timestampToISO } from '$lib/utils/timestampExtractor';
 	import RelayBlockHash from './RelayBlockHash.svelte';
 

@@ -4,23 +4,27 @@ import { getExtrinsicDecoder, type DecodedExtrinsic } from '@polkadot-api/tx-uti
 import { extractTimestampFromExtrinsics } from '$lib/utils/timestampExtractor';
 import type { BlockInfo } from 'polkadot-api';
 import { Subject } from 'rxjs';
-import {
-	parseRelayChainEvents,
-	createParachainBlockUpdates,
-	type ParachainBlockUpdate,
-	type ParachainInclusionInfo
-} from './relayChainParser';
+import { parseRelayChainEvents, type ParachainInclusionInfo } from './relayChainParser';
 
 // Make Resultset.disableFreeze a property with getter that returns Collection.disableFreeze property value. https://github.com/techfort/LokiJS/pull/918
-Object.defineProperty(
-	(Loki as unknown as { Resultset: { prototype: { disableFreeze: boolean } } }).Resultset.prototype,
-	'disableFreeze',
-	{
-		get() {
-			return this.collection.disableFreeze;
+if (
+	!(
+		'disableFreeze' in
+		(Loki as unknown as { Resultset: { prototype: { disableFreeze: boolean } } }).Resultset
+			.prototype
+	)
+) {
+	Object.defineProperty(
+		(Loki as unknown as { Resultset: { prototype: { disableFreeze: boolean } } }).Resultset
+			.prototype,
+		'disableFreeze',
+		{
+			get() {
+				return this.collection.disableFreeze;
+			}
 		}
-	}
-);
+	);
+}
 
 /**
  * Relay block document in LokiJS
@@ -49,7 +53,7 @@ let relayBlockManager: {
  */
 const parachainUpdatesSubject = new Subject<{
 	parachainId: number;
-	update: ParachainBlockUpdate;
+	update: ParachainInclusionInfo;
 }>();
 
 /**
@@ -303,9 +307,7 @@ async function processRelayBlockForParachainUpdates(
 
 		// Create block updates for each parachain found in this relay block
 		for (const [parachainId, infos] of infosByParachain) {
-			createParachainBlockUpdates(infos).forEach((update) =>
-				parachainUpdatesSubject.next({ parachainId, update })
-			);
+			infos.forEach((update) => parachainUpdatesSubject.next({ parachainId, update }));
 		}
 	} catch (error) {
 		console.warn('Failed to process relay block for parachain updates:', error);

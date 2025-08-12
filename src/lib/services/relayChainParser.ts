@@ -43,16 +43,6 @@ export interface ParachainInclusionInfo {
 	candidateReceipt: CandidateReceipt;
 }
 
-export interface ParachainBlockUpdate {
-	blockHash: string;
-	relayIncludedAtNumber?: number;
-	relayIncludedAtHash?: string;
-	relayIncludedAtTimestamp?: number;
-	relayBackedAtNumber?: number;
-	relayBackedAtHash?: string;
-	relayBackedAtTimestamp?: number;
-}
-
 /**
  * Parse relay chain events to extract parachain inclusion/backing information
  */
@@ -126,30 +116,4 @@ function normalizeParaId(paraId: ParachainIdValue): number {
 		return parseInt(paraId.toString(), 10);
 	}
 	throw new Error(`Unable to normalize parachain ID: ${paraId}`);
-}
-
-/**
- * Create parachain block updates from inclusion information
- */
-export function createParachainBlockUpdates(
-	inclusionInfos: ParachainInclusionInfo[]
-): ParachainBlockUpdate[] {
-	return inclusionInfos.map((info) => {
-		switch (info.eventType) {
-			case 'included':
-				return {
-					blockHash: info.blockHash,
-					relayIncludedAtNumber: info.relayBlockNumber,
-					relayIncludedAtHash: info.relayBlockHash,
-					relayIncludedAtTimestamp: info.relayBlockTimestamp
-				};
-			case 'backed':
-				return {
-					blockHash: info.blockHash,
-					relayBackedAtNumber: info.relayBlockNumber,
-					relayBackedAtHash: info.relayBlockHash,
-					relayBackedAtTimestamp: info.relayBlockTimestamp
-				};
-		}
-	});
 }

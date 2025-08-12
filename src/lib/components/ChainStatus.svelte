@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PolkadotClient } from 'polkadot-api';
 	import type { BlockInfo } from 'polkadot-api';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { extractTimestampFromExtrinsics } from '$lib/utils/timestampExtractor';
 	import { getExtrinsicDecoder } from '@polkadot-api/tx-utils';
 
@@ -54,6 +54,8 @@
 				timestamp = extractTimestampFromExtrinsics(extrinsics) || undefined;
 			}
 
+			// Make sure that we are waiting for the render frame
+			await tick();
 			parachainLatestBlock = {
 				number: block.number,
 				timestamp
@@ -86,6 +88,8 @@
 				timestamp = extractTimestampFromExtrinsics(extrinsics) || undefined;
 			}
 
+			// Make sure that we are waiting for the render frame
+			await tick();
 			parachainFinalizedBlock = {
 				number: block.number,
 				timestamp
@@ -118,6 +122,8 @@
 				timestamp = extractTimestampFromExtrinsics(extrinsics) || undefined;
 			}
 
+			// Make sure that we are waiting for the render frame
+			await tick();
 			relayFinalizedBlock = {
 				number: block.number,
 				timestamp
@@ -150,6 +156,8 @@
 				timestamp = extractTimestampFromExtrinsics(extrinsics) || undefined;
 			}
 
+			// Make sure that we are waiting for the render frame
+			await tick();
 			relayLatestBlock = {
 				number: block.number,
 				timestamp
