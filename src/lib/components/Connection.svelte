@@ -25,7 +25,6 @@
 
 	let connectionState = $state<ConnectionState>('disconnected');
 	let error = $state<string | null>(null);
-	let syncStatus = $state<string>('');
 
 	let relayRpcUrl = $state<string>('');
 	let parachainRpcUrl = $state<string>('');
@@ -92,7 +91,6 @@
 		try {
 			connectionState = 'connecting';
 			error = null;
-			syncStatus = 'Connecting to RPC endpoints...';
 
 			// Clear all previous chain data before connecting to new chains
 			clearAllRelayBlocks();
@@ -104,13 +102,11 @@
 
 			// Wait for connection to be established
 			connectionState = 'syncing';
-			syncStatus = 'Waiting for chain sync...';
 
 			// Wait for both chains to be ready
 			await waitForSync(relaychainClient, 'relay');
 			await waitForSync(parachainClient, 'parachain');
 
-			syncStatus = 'Sync complete!';
 			connectionState = 'connected';
 
 			onApiReady?.({
@@ -127,7 +123,6 @@
 
 	async function waitForSync(client: PolkadotClient, chainType: string): Promise<void> {
 		try {
-			syncStatus = `Syncing ${chainType} chain...`;
 			// Try to get the latest finalized block hash as a connectivity test
 			const finalizedHash = await client.getFinalizedBlock();
 			console.debug(`${chainType} chain connected, finalized block:`, finalizedHash.hash);
@@ -141,7 +136,6 @@
 			// Providers will be cleaned up automatically when disconnected
 			error = null;
 			connectionState = 'disconnected';
-			syncStatus = '';
 			relaychainClient?.destroy();
 			parachainClient?.destroy();
 		} catch (err) {
@@ -260,7 +254,7 @@
 		<div class="mb-2">
 			<span class="text-sm text-gray-600">Status:</span>
 			<span class={`ml-1 text-sm font-medium ${getStateColor(connectionState)}`}>
-				{getStateText(connectionState)} | Sync: {syncStatus || 'None'}
+				{getStateText(connectionState)}}
 			</span>
 		</div>
 
