@@ -11,6 +11,17 @@ import {
 	type ParachainInclusionInfo
 } from './relayChainParser';
 
+// Make Resultset.disableFreeze a property with getter that returns Collection.disableFreeze property value. https://github.com/techfort/LokiJS/pull/918
+Object.defineProperty(
+	(Loki as unknown as { Resultset: { prototype: { disableFreeze: boolean } } }).Resultset.prototype,
+	'disableFreeze',
+	{
+		get() {
+			return this.collection.disableFreeze;
+		}
+	}
+);
+
 /**
  * Relay block document in LokiJS
  */
@@ -21,6 +32,7 @@ export interface RelayBlockDoc extends BlockInfo {
 	timestamp?: number;
 	createdAt: number;
 	extrinsics: DecodedExtrinsic[];
+	isFinalized?: boolean;
 }
 
 /**
@@ -51,6 +63,15 @@ const relayBlockMappingSubject = new Subject<{
 }>();
 
 /**
+ * Subject for streaming relay block finalization updates
+ */
+const relayBlockFinalizationSubject = new Subject<{
+	hash: string;
+	number: number;
+	isFinalized: boolean;
+}>();
+
+/**
  * Initialize the singleton relay block manager
  */
 function initializeRelayBlockManager(maxAge: number = 3600000) {
@@ -61,7 +82,9 @@ function initializeRelayBlockManager(maxAge: number = 3600000) {
 	const collection = db.addCollection<RelayBlockDoc>('blocks', {
 		indices: ['hash', 'number', 'stateRoot'],
 		ttl: maxAge, // Auto-cleanup after 1 hour by default
-		ttlInterval: 60000 // Check for cleanup every minute
+		ttlInterval: 60000, // Check for cleanup every minute
+		disableFreeze: true,
+		clone: false // Mutate for speed
 	});
 
 	relayBlockManager = { db, collection };
@@ -228,8 +251,27 @@ export function startRelayBlockManager(relayClient: PolkadotClient): () => void 
 		}
 	});
 
+	// Subscribe to finalized blocks to track finalization
+	const finalizedSubscription = relayClient.finalizedBlock$.subscribe((finalizedBlock) => {
+		try {
+			// Update the block in the collection
+			getRelayBlockManager().collection.findAndUpdate({ hash: finalizedBlock.hash }, (doc) => {
+				doc.isFinalized = true;
+			});
+			// Emit finalization update
+			relayBlockFinalizationSubject.next({
+				hash: finalizedBlock.hash,
+				number: finalizedBlock.number,
+				isFinalized: true
+			});
+		} catch (error) {
+			console.warn('Error processing finalized relay block:', error);
+		}
+	});
+
 	return () => {
 		subscription?.unsubscribe();
+		finalizedSubscription?.unsubscribe();
 		manager.relayClient = undefined;
 	};
 }
@@ -282,4 +324,11 @@ export function getParachainUpdatesStream() {
  */
 export function getRelayBlockMappingStream() {
 	return relayBlockMappingSubject.asObservable();
+}
+
+/**
+ * Get the relay block finalization stream
+ */
+export function getRelayBlockFinalizationStream() {
+	return relayBlockFinalizationSubject.asObservable();
 }

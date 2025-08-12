@@ -80,13 +80,13 @@
 					<div class="flex-1">
 						<div class="text-base">
 							{#if event.type === 'block'}
-								<span class="font-medium text-blue-600">📦 Block announced</span>
+								<span class="font-medium text-blue-600">📣 Block announced</span>
 								<span class="text-gray-600">#{event.blockNumber}</span>
 							{:else if event.type === 'backed'}
 								<span class="font-medium text-green-600">✅ Backed in relay</span>
 								<span class="text-gray-600">#{event.blockNumber}</span>
 							{:else if event.type === 'included'}
-								<span class="font-medium text-purple-600">📮 Included in relay</span>
+								<span class="font-medium text-purple-600">📦 Included in relay</span>
 								<span class="text-gray-600">#{event.blockNumber}</span>
 							{/if}
 						</div>
