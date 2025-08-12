@@ -161,19 +161,22 @@
 
 	onMount(() => {
 		if (!parachainClient || !relayClient) return;
+		try {
+			const parachainSub = parachainClient.blocks$.subscribe(updateParachainLatest);
+			const parachainFinalizedSub =
+				parachainClient.finalizedBlock$.subscribe(updateParachainFinalized);
+			const relaySub = relayClient.blocks$.subscribe(updateRelayLatest);
+			const relayFinalizedSub = relayClient.finalizedBlock$.subscribe(updateRelayFinalized);
 
-		const parachainSub = parachainClient.blocks$.subscribe(updateParachainLatest);
-		const parachainFinalizedSub =
-			parachainClient.finalizedBlock$.subscribe(updateParachainFinalized);
-		const relaySub = relayClient.blocks$.subscribe(updateRelayLatest);
-		const relayFinalizedSub = relayClient.finalizedBlock$.subscribe(updateRelayFinalized);
-
-		return () => {
-			parachainSub?.unsubscribe();
-			parachainFinalizedSub?.unsubscribe();
-			relaySub?.unsubscribe();
-			relayFinalizedSub?.unsubscribe();
-		};
+			return () => {
+				parachainSub?.unsubscribe();
+				parachainFinalizedSub?.unsubscribe();
+				relaySub?.unsubscribe();
+				relayFinalizedSub?.unsubscribe();
+			};
+		} catch (e) {
+			console.error('Chain Status mount failure', e);
+		}
 	});
 
 	// Helper function to format time ago (reactive to currentTime)
