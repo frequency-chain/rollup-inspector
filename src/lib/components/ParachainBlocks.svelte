@@ -25,8 +25,8 @@
 		number: number;
 		events: SystemEvent[];
 		author: string | null;
-		absoluteSlot?: number;
-		collatorSlot?: number;
+		absoluteSlot: number;
+		collatorSlot: number;
 		hash: string;
 		header: BlockHeader;
 		timestamp?: number;
@@ -39,7 +39,7 @@
 		relayParentHash?: string;
 		relayParentNumber?: number;
 		relayParentTimestamp?: number;
-		relayParentStateRoot?: string; // Store the state root for matching
+		relayParentStateRoot?: string;
 	};
 
 	let blocksByNumber = new SvelteMap<number, BlockDisplay[]>();

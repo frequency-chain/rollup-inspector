@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { SvelteMap } from 'svelte/reactivity';
 	import type { BlockDisplay } from './ParachainBlocks.svelte';
-	import ExpectedForkDetails from './ExpectedForkDetails.svelte';
+	import BlockSlot from './BlockSlot.svelte';
 	import BlockTimeline from './BlockTimeline.svelte';
 
 	let {
@@ -19,12 +19,16 @@
 		for (const block of blocks) {
 			if (block.absoluteSlot !== undefined) {
 				const existing = groups.get(block.absoluteSlot) || [];
-				existing.push(block);
+				existing.unshift(block);
 				groups.set(block.absoluteSlot, existing);
 			}
 		}
 		return groups;
 	});
+
+	let slotGroupsOrdered = $derived.by(() =>
+		[...slotGroups.entries()].sort((a, b) => b[0] - a[0]).map((x) => x[1])
+	);
 
 	let finalizedTime = $derived(
 		// Cannot be more than one
@@ -88,8 +92,8 @@
 
 			<div class="space-y-4 rounded-lg bg-gray-100 p-4 shadow">
 				<!-- Expected Forks -->
-				{#each slotGroups.values() as slotBlocks (slotBlocks[0].absoluteSlot)}
-					<ExpectedForkDetails blocks={slotBlocks} />
+				{#each slotGroupsOrdered as slotBlocks (slotBlocks[0].absoluteSlot)}
+					<BlockSlot blocks={slotBlocks} />
 				{/each}
 			</div>
 		</div>
