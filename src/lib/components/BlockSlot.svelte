@@ -9,12 +9,7 @@
 	} = $props();
 </script>
 
-<div class="space-y-3">
-	<div>
-		<span class="font-medium text-gray-600">Author:</span>
-		<span class="font-mono break-all">{blocks[0].author}</span>
-	</div>
-
+<div class="space-y-1">
 	<div>
 		<span class="font-medium text-gray-600">Slot:</span>
 		<span class="font-mono text-purple-600">
@@ -27,6 +22,11 @@
 		<span class="font-mono">
 			{blocks.length}
 		</span>
+	</div>
+
+	<div>
+		<span class="font-medium text-gray-600">Author:</span>
+		<span class="font-mono break-all">{blocks[0].author}</span>
 	</div>
 
 	{#each blocks as block (block.hash)}
