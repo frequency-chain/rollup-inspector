@@ -254,7 +254,7 @@
 		<div class="mb-2">
 			<span class="text-sm text-gray-600">Status:</span>
 			<span class={`ml-1 text-sm font-medium ${getStateColor(connectionState)}`}>
-				{getStateText(connectionState)}}
+				{getStateText(connectionState)}
 			</span>
 		</div>
 
