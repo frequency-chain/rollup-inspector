@@ -2,6 +2,7 @@
 	import { type PolkadotClient } from 'polkadot-api';
 	import type { SystemEvent } from '@polkadot-api/observable-client';
 	import BlockDetails from './BlockDetails.svelte';
+	import SummaryStatistics from './SummaryStatistics.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import type { BlockInfo } from 'polkadot-api';
 	import { onMount } from 'svelte';
@@ -240,6 +241,7 @@
 {:else if sortedBlockNumbers.length === 0}
 	<div class="text-gray-500">Waiting for blocks...</div>
 {:else}
+	<SummaryStatistics {blocksByNumber} {parachainCollators} />
 	{#each sortedBlockNumbers as blockNumber (blockNumber)}
 		<BlockDetails {blockNumber} blocks={blocksByNumber.get(blockNumber) || []} />
 	{/each}
