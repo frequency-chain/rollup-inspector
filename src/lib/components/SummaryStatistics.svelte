@@ -144,14 +144,14 @@
 			const collatorSlot = i % totalCollators;
 			const statData = stats.get(collatorSlot) || { missed: 0, possible: 0 };
 			statData.possible++;
-			
+
 			if (!slotSet.has(i)) {
 				statData.missed++;
 				const existing = details.get(collatorSlot) || [];
 				existing.push(i);
 				details.set(collatorSlot, existing);
 			}
-			
+
 			stats.set(collatorSlot, statData);
 		}
 
@@ -188,7 +188,7 @@
 	// Get most recent included block for live counters
 	let mostRecentIncluded = $derived.by(() => {
 		const recentBlocks = includedBlocks
-			.filter(block => block.relayIncludedAtTimestamp)
+			.filter((block) => block.relayIncludedAtTimestamp)
 			.sort((a, b) => (b.relayIncludedAtTimestamp || 0) - (a.relayIncludedAtTimestamp || 0));
 		return recentBlocks[0] || null;
 	});
@@ -196,7 +196,7 @@
 	// Get most recent block for live counters
 	let mostRecentBlock = $derived.by(() => {
 		const recentBlocks = includedBlocks
-			.filter(block => block.timestamp)
+			.filter((block) => block.timestamp)
 			.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 		return recentBlocks[0] || null;
 	});
