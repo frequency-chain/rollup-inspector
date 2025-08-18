@@ -98,11 +98,15 @@
 		});
 	});
 
-	// Calculate collator performance metrics (missed slots and efficiency)
-	let collatorStats = $derived.by(() => {
-		const stats = new SvelteMap<number, { missed: number; possible: number }>();
+	// State for showing missed slots details
+	let showMissedSlotsDetail = $state<number | null>(null);
 
-		if (resolvedCollators.length === 0) return stats;
+	// Calculate both collator stats and missed slot details in one pass
+	let collatorAnalysis = $derived.by(() => {
+		const stats = new SvelteMap<number, { missed: number; possible: number }>();
+		const details = new SvelteMap<number, number[]>();
+
+		if (resolvedCollators.length === 0) return { stats, details };
 
 		// Go from all the blocks to the unique set of absolute slots
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity
@@ -119,21 +123,32 @@
 			}
 		}
 
-		if (slotSet.size < 2 || minimum === Infinity) return stats;
+		if (slotSet.size < 2 || minimum === Infinity) return { stats, details };
 
 		const totalCollators = resolvedCollators.length;
 
-		// Check for holes in the absolute slot sequence
+		// Check for holes in the absolute slot sequence - collect both stats and details
 		for (let i = minimum; i < maximum; i++) {
 			const collatorSlot = i % totalCollators;
 			const statData = stats.get(collatorSlot) || { missed: 0, possible: 0 };
 			statData.possible++;
-			if (!slotSet.has(i)) statData.missed++;
+			
+			if (!slotSet.has(i)) {
+				statData.missed++;
+				const existing = details.get(collatorSlot) || [];
+				existing.push(i);
+				details.set(collatorSlot, existing);
+			}
+			
 			stats.set(collatorSlot, statData);
 		}
 
-		return stats;
+		return { stats, details };
 	});
+
+	// Extract individual parts from the combined analysis
+	let collatorStats = $derived(collatorAnalysis.stats);
+	let missedSlotsDetails = $derived(collatorAnalysis.details);
 
 	// Calculate transaction throughput (average extrinsics per included block)
 	let transactionThroughput = $derived.by(() => {
@@ -231,7 +246,22 @@
 									).toLocaleString()}%</span
 								>
 								{#if data.missed}
-									<span class="text-red-600">({data.missed} missed)</span>
+									<span class="text-red-600">
+										(<button
+											class="cursor-pointer underline decoration-dotted hover:text-red-800"
+											onclick={() =>
+												(showMissedSlotsDetail = showMissedSlotsDetail === slot ? null : slot)}
+										>
+											{data.missed} missed
+										</button>)
+									</span>
+								{/if}
+
+								<!-- Show detailed missed slots when expanded -->
+								{#if showMissedSlotsDetail === slot && missedSlotsDetails.has(slot)}
+									<div class="mt-1 ml-2 rounded bg-red-50 p-1 text-sm break-all text-red-500">
+										Missed absolute slots: {missedSlotsDetails.get(slot)?.join(', ')}
+									</div>
 								{/if}
 							</div>
 						{/each}
