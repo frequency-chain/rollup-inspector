@@ -101,6 +101,18 @@
 	// State for showing missed slots details
 	let showMissedSlotsDetail = $state<number | null>(null);
 
+	// Current time for reactive updates (updated every second)
+	let currentTime = $state(Date.now());
+
+	$effect(() => {
+		const interval = setInterval(() => {
+			currentTime = Date.now();
+		}, 1000);
+
+		// cleanup when component is destroyed
+		return () => clearInterval(interval);
+	});
+
 	// Calculate both collator stats and missed slot details in one pass
 	let collatorAnalysis = $derived.by(() => {
 		const stats = new SvelteMap<number, { missed: number; possible: number }>();
@@ -173,9 +185,42 @@
 		return totalExtrinsics / includedBlocks.length;
 	});
 
+	// Get most recent included block for live counters
+	let mostRecentIncluded = $derived.by(() => {
+		const recentBlocks = includedBlocks
+			.filter(block => block.relayIncludedAtTimestamp)
+			.sort((a, b) => (b.relayIncludedAtTimestamp || 0) - (a.relayIncludedAtTimestamp || 0));
+		return recentBlocks[0] || null;
+	});
+
+	// Get most recent block for live counters
+	let mostRecentBlock = $derived.by(() => {
+		const recentBlocks = includedBlocks
+			.filter(block => block.timestamp)
+			.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+		return recentBlocks[0] || null;
+	});
+
+	// Live counter for time since last inclusion
+	let timeSinceLastInclusion = $derived.by(() => {
+		if (!mostRecentIncluded?.relayIncludedAtTimestamp) return null;
+		return Math.floor((currentTime - mostRecentIncluded.relayIncludedAtTimestamp) / 1000);
+	});
+
+	// Live counter for time since last block
+	let timeSinceLastBlock = $derived.by(() => {
+		if (!mostRecentBlock?.timestamp) return null;
+		return Math.floor((currentTime - mostRecentBlock.timestamp) / 1000);
+	});
+
 	function formatTime(seconds: number | null): string {
 		if (seconds === null) return 'N/A';
 		return `${seconds.toFixed(1)}s`;
+	}
+
+	function formatCounter(seconds: number | null, label: string): string {
+		if (seconds === null) return `no recent ${label}`;
+		return `${seconds}s since last ${label}`;
 	}
 </script>
 
@@ -194,6 +239,9 @@
 					<div class="text-xl font-bold text-blue-700">
 						{formatTime(averageTimeToInclusion)}
 					</div>
+					<div class="text-sm text-blue-600">
+						{formatCounter(timeSinceLastInclusion, 'inclusion')}
+					</div>
 				</div>
 
 				<!-- Average Time Between Blocks -->
@@ -201,6 +249,9 @@
 					<div class="text-sm font-medium text-green-900">Average Time Between Blocks</div>
 					<div class="text-xl font-bold text-green-700">
 						{formatTime(averageTimeBetweenBlocks)}
+					</div>
+					<div class="text-sm text-green-600">
+						{formatCounter(timeSinceLastBlock, 'block')}
 					</div>
 				</div>
 			</div>
